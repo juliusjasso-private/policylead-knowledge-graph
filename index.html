@@ -24,7 +24,8 @@ window.KG_ONTOLOGY = {
     { id:"WirtschaftlicheFolge",  label:"Wirtschaftliche Folge",    color:"#B71C1C" },
     { id:"Evaluierung",           label:"Evaluierung",              color:"#F57F17" },
     { id:"PolitischeAbsicht",     label:"Politische Absicht",       color:"#795548" },
-    { id:"Kommune",               label:"Kommune",                   color:"#2E7D32" }
+    { id:"Kommune",               label:"Kommune",                   color:"#2E7D32" },
+    { id:"Technologie",           label:"Technologie / Energieträger", color:"#F9A825" }
   ]
 };
 
@@ -114,7 +115,8 @@ window.KG_DATA = {
     { id:"SolaroffenseMettmann",label:"Solarförderung\nMettmann", fullLabel:"Solarförderung Kreis Mettmann",         type:"PolitischeMaßnahme", desc:"Budget ca. 66.000 €/Jahr; ausschließlich Balkonkraftwerke/Stecker-PV förderfähig. Vergabe per Losverfahren. Kein Dach-PV-Förderprogramm im Kreis." },
     { id:"KlimaBonus_LB",   label:"KlimaBonus\nLudwigsburg", fullLabel:"KlimaBonus Landkreis Ludwigsburg",           type:"PolitischeMaßnahme", desc:"Solarförderprogramm des LK Ludwigsburg — seit Anfang 2026 eingefroren (Haushaltslage). Laufende Anträge nicht mehr bearbeitbar; Neuaufstellung des Programms noch offen." },
     { id:"SolarBonusNeuss", label:"Stecker-PV\nRhein-Kreis Neuss", fullLabel:"Stecker-PV-Förderung Rhein-Kreis Neuss", type:"PolitischeMaßnahme", desc:"Pauschalförderung 50–100€ für Balkonkraftwerke/Stecker-PV. Kein Dach-PV-Programm. Niedrigschwellig, aber mit geringer Wirkungsdichte." },
-    { id:"PVPflichtOeffentlich", label:"PV-Pflicht\nöffentl. Liegenschaften", fullLabel:"§106 GModG: PV-Pflicht für öffentliche Gebäude", type:"OrdnungsrechtlicheRegelung", date:"2027-01-01", desc:"§106 GModG (EPBD Art.10-Umsetzung): Stufenweise Solarpflicht für öffentliche Bestandsgebäude — 2028: ≥2.000m², 2029: ≥750m², 2031: ≥250m². Neubauten öffentl. Hand: ab 1.1.2027 Solaroptimierung, ab 1.1.2028 Nullemissionsgebäudestandard. Betrifft Kommunen, Bund, Länder. Ausnahmen bei fehlender Wirtschaftlichkeit. Kritikers: 'lieblose' Umsetzung ohne Größenkonkretisierung." },
+    { id:"PVPflichtOeffentlich", label:"PV-Pflicht\nöffentl. Liegenschaften", fullLabel:"§106 GModG: PV-Pflicht für öffentliche Gebäude", type:"OrdnungsrechtlicheRegelung", date:"2027-01-01", desc:"§106 GModG (EPBD Art.10-Umsetzung): Stufenweise Solarpflicht für öffentliche Bestandsgebäude — 2028: ≥2.000m², 2029: ≥750m², 2031: ≥250m². Neubauten öffentl. Hand: ab 1.1.2027 Solaroptimierung, ab 1.1.2028 Nullemissionsgebäudestandard. Betrifft Kommunen, Bund, Länder. Ausnahmen bei fehlender Wirtschaftlichkeit." },
+    { id:"Photovoltaik", label:"Photovoltaik", fullLabel:"Photovoltaik (Energieträger / Technologie)", type:"Technologie", desc:"Solarstromtechnologie als zentraler Energieträger im GModG-Kontext: Verknüpft §106 PV-Pflicht (öffentl. Liegenschaften) mit kommunalen Förderprogrammen. Relevante Förderbereiche: Dach-PV (kWp-basiert), Stecker-PV/Balkonkraftwerke, Solaroffensiven. Markt: stark wachsend, aber kommunale Förderunsicherheit durch Haushaltsdruck 2026." },
     { id:"HHKlima100STG",   label:"100 Mio. €/Jahr\nKlimapaket STG", fullLabel:"Klimapaket Stuttgart — 100 Mio. €/Jahr", type:"WirtschaftlicheFolge", desc:"Jährliches Klimaschutzbudget der Stadt Stuttgart. Finanzierungsbasis für Solaroffensive und weitere kommunale Klimamaßnahmen. Zeigt kommunale Handlungsbereitschaft unabhängig von Bundesgesetzgebung." },
     { id:"HHKlima60DUS",    label:"60 Mio. €\nSondervermögen DUS", fullLabel:"Sondervermögen Klima und Umwelt Düsseldorf — 60 Mio. €", type:"WirtschaftlicheFolge", desc:"Einmaliges Sondervermögen der Stadt Düsseldorf. Finanzierungsbasis für Programm 'Klimafreundliches Wohnen und Arbeiten' (Neustart 1.10.2026). Verabschiedet im Stadtrat als Teil der Klimaschutzoffensive." }
   ],
@@ -236,15 +238,23 @@ window.KG_DATA = {
     { source:"LKLudwigsburg",    target:"KlimaBonus_LB",       relation:"koordiniert",     label:"koordiniert (eingefroren)" },
     { source:"KreisMettmann",    target:"SolaroffenseMettmann",relation:"koordiniert",     label:"koordiniert" },
     { source:"RheinKreisNeuss",  target:"SolarBonusNeuss",     relation:"koordiniert",     label:"koordiniert" },
-    // ── §106 GModG PV-Pflicht öffentliche Liegenschaften ───────────────────
-    { source:"GModG",           target:"PVPflichtOeffentlich", relation:"enthält",         label:"enthält (§106)", since:"2026-05-13" },
-    { source:"EPBD",            target:"PVPflichtOeffentlich", relation:"erfordert",       label:"erfordert (Art.10 EPBD)" },
-    { source:"PVPflichtOeffentlich", target:"KreisMettmann",  relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
-    { source:"PVPflichtOeffentlich", target:"RheinKreisNeuss",relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
-    { source:"PVPflichtOeffentlich", target:"Stuttgart",      relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
-    { source:"PVPflichtOeffentlich", target:"LKLudwigsburg",  relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
-    { source:"PVPflichtOeffentlich", target:"Düsseldorf",     relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
-    { source:"CSU",             target:"PVPflichtOeffentlich", relation:"unterstützt",    label:"unterstützt (kommunale Anwendbarkeit)" }
+    // ── §106 GModG PV-Pflicht → Photovoltaik-Hub → Kommunen & Maßnahmen ────
+    { source:"GModG",                target:"PVPflichtOeffentlich", relation:"enthält",      label:"enthält (§106)", since:"2026-05-13" },
+    { source:"EPBD",                 target:"PVPflichtOeffentlich", relation:"erfordert",    label:"erfordert (Art.10 EPBD)" },
+    { source:"PVPflichtOeffentlich", target:"Photovoltaik",         relation:"reguliert",    label:"reguliert Energieträger", since:"2027-01-01" },
+    { source:"CSU",                  target:"Photovoltaik",         relation:"unterstützt",  label:"unterstützt (kommunale PV-Pflicht)" },
+    // Photovoltaik-Hub → Kommunen (Pflicht ab 2028)
+    { source:"Photovoltaik", target:"KreisMettmann",   relation:"verpflichtet", label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"Photovoltaik", target:"RheinKreisNeuss", relation:"verpflichtet", label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"Photovoltaik", target:"Stuttgart",       relation:"verpflichtet", label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"Photovoltaik", target:"LKLudwigsburg",   relation:"verpflichtet", label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"Photovoltaik", target:"Düsseldorf",      relation:"verpflichtet", label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    // Kommunale Maßnahmen → Photovoltaik-Hub (regionale Umsetzung)
+    { source:"SolaroffenseSTG",    target:"Photovoltaik", relation:"fördert", label:"fördert (300€/kWp Dach-PV)" },
+    { source:"SolaroffenseMettmann",target:"Photovoltaik",relation:"fördert", label:"fördert (Stecker-PV, Losverfahren)" },
+    { source:"KlimaBonus_LB",      target:"Photovoltaik", relation:"fördert", label:"förderte (eingefroren 2026)" },
+    { source:"SolarBonusNeuss",    target:"Photovoltaik", relation:"fördert", label:"fördert (50–100€ Stecker-PV)" },
+    { source:"KWKlimafreundlich",  target:"Photovoltaik", relation:"fördert", label:"fördert (200€/kWp Dach-PV)" }
   ]
 };
 </script>
@@ -1422,6 +1432,7 @@ const ONTO = {
     { id:"MarktFolge",               label:"MarktFolge",                  parent:"WirtschaftlicheFolge",  color:"#C62828" },
     { id:"SozialFolge",              label:"SozialFolge",                 parent:"WirtschaftlicheFolge",  color:"#C62828" },
     { id:"Haushaltswirkung",         label:"Haushaltswirkung",            parent:"WirtschaftlicheFolge",  color:"#C62828" },
+    { id:"Technologie",              label:"Technologie / Energieträger", parent:"Thing",                 color:"#F9A825" },
   ],
   properties: [
     { id:"löstAb",               domain:"Bundesgesetz",           range:"Bundesgesetz",            group:"rechtlich", note:"subPropertyOf ändert" },
