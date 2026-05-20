@@ -61,7 +61,7 @@ window.KG_DATA = {
     { id:"BMJ",   label:"BMJ",   fullLabel:"Bundesministerium der Justiz",                                type:"Ministerium", wikidataId:"Q317348",   wikipedia:"Bundesministerium_der_Justiz", desc:"Mietrechtliche Schutzregelungen (CO₂KostAufG-Änderungen) ausgearbeitet (Stefanie Hubig, SPD)." },
     // Parteien
     { id:"CDU",   label:"CDU",   type:"Partei", wikidataId:"Q49762", wikipedia:"Christlich_Demokratische_Union_Deutschlands", desc:"Koalitionspartei. Kurs: Technologieoffenheit, Eigentumsfreiheit, Planungssicherheit. Trägt GModG als Koalitionsversprechen." },
-    { id:"CSU",   label:"CSU",   type:"Partei", wikidataId:"Q49761", wikipedia:"Christlich-Soziale_Union_in_Bayern", desc:"Koalitionspartei (gemeinsame Fraktion mit CDU). Betont kommunale und regionale Anwendbarkeit des GModG." },
+    { id:"CSU",   label:"CSU",   type:"Partei", wikidataId:"Q49761", wikipedia:"Christlich-Soziale_Union_in_Bayern", desc:"Koalitionspartei (gemeinsame Fraktion mit CDU). Unterzeichner des Koalitionsvertrags (CDU/CSU–SPD). Betont kommunale und regionale Anwendbarkeit des GModG. Unterstützt §106 PV-Pflicht für öffentliche Liegenschaften als EPBD-konforme Verpflichtung der öffentlichen Hand." },
     { id:"SPD",   label:"SPD",   type:"Partei", wikidataId:"Q49763", wikipedia:"Sozialdemokratische_Partei_Deutschlands", desc:"Koalitionspartei. Schwerpunkt: Mieterschutz als SPD-Durchsetzungserfolg im Koalitionskompromiss." },
     { id:"Grüne", label:"Grüne", type:"Partei", wikidataId:"Q49766", wikipedia:"B%C3%BCndnis_90/Die_Gr%C3%BCnen", desc:"Bundesopposition. Ablehnung: GModG droht Rückschritt, Klimaziele 2045 gefährdet, Gaslobby hat sich durchgesetzt." },
     { id:"AfD",   label:"AfD",   type:"Partei", wikidataId:"Q23911",  wikipedia:"Alternative_f%C3%BCr_Deutschland", desc:"Opposition. Fordert vollständige GEG-Abschaffung inkl. CO₂-Steuer und EU-ETS. GModG sei nur Umbenennung." },
@@ -114,6 +114,7 @@ window.KG_DATA = {
     { id:"SolaroffenseMettmann",label:"Solarförderung\nMettmann", fullLabel:"Solarförderung Kreis Mettmann",         type:"PolitischeMaßnahme", desc:"Budget ca. 66.000 €/Jahr; ausschließlich Balkonkraftwerke/Stecker-PV förderfähig. Vergabe per Losverfahren. Kein Dach-PV-Förderprogramm im Kreis." },
     { id:"KlimaBonus_LB",   label:"KlimaBonus\nLudwigsburg", fullLabel:"KlimaBonus Landkreis Ludwigsburg",           type:"PolitischeMaßnahme", desc:"Solarförderprogramm des LK Ludwigsburg — seit Anfang 2026 eingefroren (Haushaltslage). Laufende Anträge nicht mehr bearbeitbar; Neuaufstellung des Programms noch offen." },
     { id:"SolarBonusNeuss", label:"Stecker-PV\nRhein-Kreis Neuss", fullLabel:"Stecker-PV-Förderung Rhein-Kreis Neuss", type:"PolitischeMaßnahme", desc:"Pauschalförderung 50–100€ für Balkonkraftwerke/Stecker-PV. Kein Dach-PV-Programm. Niedrigschwellig, aber mit geringer Wirkungsdichte." },
+    { id:"PVPflichtOeffentlich", label:"PV-Pflicht\nöffentl. Liegenschaften", fullLabel:"§106 GModG: PV-Pflicht für öffentliche Gebäude", type:"OrdnungsrechtlicheRegelung", date:"2027-01-01", desc:"§106 GModG (EPBD Art.10-Umsetzung): Stufenweise Solarpflicht für öffentliche Bestandsgebäude — 2028: ≥2.000m², 2029: ≥750m², 2031: ≥250m². Neubauten öffentl. Hand: ab 1.1.2027 Solaroptimierung, ab 1.1.2028 Nullemissionsgebäudestandard. Betrifft Kommunen, Bund, Länder. Ausnahmen bei fehlender Wirtschaftlichkeit. Kritikers: 'lieblose' Umsetzung ohne Größenkonkretisierung." },
     { id:"HHKlima100STG",   label:"100 Mio. €/Jahr\nKlimapaket STG", fullLabel:"Klimapaket Stuttgart — 100 Mio. €/Jahr", type:"WirtschaftlicheFolge", desc:"Jährliches Klimaschutzbudget der Stadt Stuttgart. Finanzierungsbasis für Solaroffensive und weitere kommunale Klimamaßnahmen. Zeigt kommunale Handlungsbereitschaft unabhängig von Bundesgesetzgebung." },
     { id:"HHKlima60DUS",    label:"60 Mio. €\nSondervermögen DUS", fullLabel:"Sondervermögen Klima und Umwelt Düsseldorf — 60 Mio. €", type:"WirtschaftlicheFolge", desc:"Einmaliges Sondervermögen der Stadt Düsseldorf. Finanzierungsbasis für Programm 'Klimafreundliches Wohnen und Arbeiten' (Neustart 1.10.2026). Verabschiedet im Stadtrat als Teil der Klimaschutzoffensive." }
   ],
@@ -137,6 +138,7 @@ window.KG_DATA = {
     { source:"GModG",           target:"Eval2030",        relation:"schreibtVor",    label:"schreibt vor",     since:"2030-01-01" },
     { source:"Koalitionsvertrag",target:"GModG",          relation:"begründet",      label:"begründet" },
     { source:"CDU", target:"Koalitionsvertrag", relation:"unterzeichnet", label:"unterzeichnet" },
+    { source:"CSU", target:"Koalitionsvertrag", relation:"unterzeichnet", label:"unterzeichnet" },
     { source:"SPD", target:"Koalitionsvertrag", relation:"unterzeichnet", label:"unterzeichnet" },
     // ── Ministerien & Personen ───────────────────────────────────────────
     { source:"Reiche",    target:"BMWE",  relation:"leitet",   label:"leitet" },
@@ -233,7 +235,16 @@ window.KG_DATA = {
     { source:"KWPDüsseldorf",    target:"KWKlimafreundlich",   relation:"referenziertFür", label:"referenziert (Maßnahmenbündel f)" },
     { source:"LKLudwigsburg",    target:"KlimaBonus_LB",       relation:"koordiniert",     label:"koordiniert (eingefroren)" },
     { source:"KreisMettmann",    target:"SolaroffenseMettmann",relation:"koordiniert",     label:"koordiniert" },
-    { source:"RheinKreisNeuss",  target:"SolarBonusNeuss",     relation:"koordiniert",     label:"koordiniert" }
+    { source:"RheinKreisNeuss",  target:"SolarBonusNeuss",     relation:"koordiniert",     label:"koordiniert" },
+    // ── §106 GModG PV-Pflicht öffentliche Liegenschaften ───────────────────
+    { source:"GModG",           target:"PVPflichtOeffentlich", relation:"enthält",         label:"enthält (§106)", since:"2026-05-13" },
+    { source:"EPBD",            target:"PVPflichtOeffentlich", relation:"erfordert",       label:"erfordert (Art.10 EPBD)" },
+    { source:"PVPflichtOeffentlich", target:"KreisMettmann",  relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"PVPflichtOeffentlich", target:"RheinKreisNeuss",relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"PVPflichtOeffentlich", target:"Stuttgart",      relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"PVPflichtOeffentlich", target:"LKLudwigsburg",  relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"PVPflichtOeffentlich", target:"Düsseldorf",     relation:"verpflichtet",    label:"verpflichtet (ab 2028, ≥2.000m²)" },
+    { source:"CSU",             target:"PVPflichtOeffentlich", relation:"unterstützt",    label:"unterstützt (kommunale Anwendbarkeit)" }
   ]
 };
 </script>
@@ -1825,6 +1836,7 @@ const NODE_TEMPORAL = {
   "KlimaBonus_LB":      { validFrom:"2022-01-01",  validUntil:"2026-01-01", note:"KlimaBonus LK Ludwigsburg eingefroren seit Anfang 2026" },
   "HHKlima100STG":      { validFrom:"2022-01-01",  note:"Jährlich fortlaufendes Klimapaket Stuttgart" },
   "HHKlima60DUS":       { validFrom:"2026-10-01",  note:"Sondervermögen für Neustart DUS-Förderprogramm ab 1.10.2026" },
+  "PVPflichtOeffentlich":{ validFrom:"2027-01-01",  note:"Stufe 1: Neubauten öff. Hand ab 1.1.2027; Bestand ≥2.000m² ab 2028; ≥750m² ab 2029; ≥250m² ab 2031" },
 };
 
 // Temporale Metadaten für Links (ergänzt fehlende since; fügt until/conflictsWith hinzu)
