@@ -541,10 +541,13 @@ window.KG_DATA = {
   #onto-wrap { flex:1; display:none; overflow:hidden; }
   #onto-wrap.show { display:flex; }
 
-  #onto-tree { width:210px; min-width:180px; border-right:1px solid #2a2d3e;
-               overflow-y:auto; padding:10px 0; font-size:11px; }
-  #onto-tree h3 { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:1px;
-                  padding:0 12px 6px; }
+  #onto-tree { display:none; flex-direction:column; flex:1;
+               overflow-y:auto; padding:10px 0; font-size:11px;
+               border-top:1px solid #1c3050; }
+  #onto-tree.show { display:flex; }
+  #onto-tree h3 { font-size:10px; color:#7b8da3; text-transform:uppercase;
+                  letter-spacing:0.12em; font-weight:700;
+                  padding:10px 12px 6px; }
   .tree-item { display:flex; align-items:center; gap:6px; padding:3px 12px 3px;
                cursor:pointer; transition:background 0.12s; white-space:nowrap; }
   .tree-item:hover { background:#2a2d3e; }
@@ -707,6 +710,12 @@ window.KG_DATA = {
 
     </div><!-- /analyse-wrap -->
 
+    <!-- ── Onto-Tree in Sidebar ───────────────────────────────── -->
+    <div id="onto-tree">
+      <h3>Klassenhierarchie</h3>
+      <div id="onto-tree-items"></div>
+    </div>
+
   </div><!-- /sidebar -->
 
   <!-- ── Graph ─────────────────────────────────────────────────── -->
@@ -739,10 +748,6 @@ window.KG_DATA = {
 
   <!-- ── Ontologie-Schema View ────────────────────────────────── -->
   <div id="onto-wrap">
-    <div id="onto-tree">
-      <h3>Klassenhierarchie</h3>
-      <div id="onto-tree-items"></div>
-    </div>
     <div id="onto-graph">
       <svg id="onto-canvas"></svg>
     </div>
@@ -1411,6 +1416,7 @@ const controlsEl = document.getElementById('controls');
 let ontoRendered = false;
 
 const analyseWrap = document.getElementById('analyse-wrap');
+const ontoTree    = document.getElementById('onto-tree');
 
 function setActiveTab(id) {
   ['tab-data','tab-onto','tab-analyse'].forEach(t =>
@@ -1422,6 +1428,7 @@ document.getElementById('tab-data').addEventListener('click', () => {
   graphWrap.style.display = '';
   ontoWrap.classList.remove('show');
   analyseWrap.classList.remove('show');
+  ontoTree.classList.remove('show');
   searchWrap.style.display = '';
   legendEl2.style.display  = '';
   controlsEl.style.display = '';
@@ -1434,6 +1441,7 @@ document.getElementById('tab-onto').addEventListener('click', () => {
   graphWrap.style.display = 'none';
   ontoWrap.classList.add('show');
   analyseWrap.classList.remove('show');
+  ontoTree.classList.add('show');       // tree lives in sidebar now
   searchWrap.style.display = 'none';
   legendEl2.style.display  = 'none';
   controlsEl.style.display = 'none';
@@ -1443,9 +1451,10 @@ document.getElementById('tab-onto').addEventListener('click', () => {
 
 document.getElementById('tab-analyse').addEventListener('click', () => {
   setActiveTab('tab-analyse');
-  graphWrap.style.display = '';   // keep graph visible
+  graphWrap.style.display = '';
   ontoWrap.classList.remove('show');
   analyseWrap.classList.add('show');
+  ontoTree.classList.remove('show');
   searchWrap.style.display = 'none';
   legendEl2.style.display  = 'none';
   controlsEl.style.display = 'none';
