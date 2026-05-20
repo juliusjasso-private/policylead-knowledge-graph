@@ -1,0 +1,359 @@
+@prefix pol:  <https://policy-kg.org/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  POLICY KNOWLEDGE GRAPH — OWL 2 Ontologie
+#  Domain: Politische Regulierung · Gesetzgebung · Advocacy · Wirtschaftlicher Impact
+#  Anwendungsfall: Gebäudemodernisierungsgesetz (GModG) 2026
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pol:PolicyKGOntology a owl:Ontology ;
+    rdfs:label "Policy Knowledge Graph Ontologie"@de ;
+    rdfs:comment "OWL-2-Ontologie für die Domäne Gesetzgebung, Advocacy und wirtschaftliche Folgenanalyse"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 1: Rechtliche Instrumente
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:RechtlichesInstrument a owl:Class ;
+    rdfs:label "Rechtliches Instrument"@de ;
+    rdfs:comment "Oberklasse für alle Rechtsnormen (Gesetze, Verordnungen, EU-Rechtsakte)"@de .
+
+pol:Bundesgesetz a owl:Class ;
+    rdfs:subClassOf pol:RechtlichesInstrument ;
+    rdfs:label "Bundesgesetz"@de ;
+    rdfs:comment "Formelles Bundesgesetz (Bundestag, Bundesrat, Ausfertigung)"@de .
+
+pol:Verordnung a owl:Class ;
+    rdfs:subClassOf pol:RechtlichesInstrument ;
+    rdfs:label "Verordnung"@de .
+
+pol:EURechtakt a owl:Class ;
+    rdfs:subClassOf pol:RechtlichesInstrument ;
+    rdfs:label "EU-Rechtsakt"@de ;
+    rdfs:comment "EU-Verordnung, EU-Richtlinie (Richtlinie erfordert nationale Umsetzung)"@de .
+
+pol:EURichtlinie a owl:Class ;
+    rdfs:subClassOf pol:EURechtakt ;
+    rdfs:label "EU-Richtlinie"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 2: Gesetzgebungsverfahren
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:Gesetzgebungsverfahren a owl:Class ;
+    rdfs:label "Gesetzgebungsverfahren"@de ;
+    rdfs:comment "Formale Stufe im Gesetzgebungsprozess (Referentenentwurf, Kabinettsbeschluss, Lesung, etc.)"@de .
+
+pol:Kabinettsbeschluss a owl:Class ;
+    rdfs:subClassOf pol:Gesetzgebungsverfahren ;
+    rdfs:label "Kabinettsbeschluss"@de .
+
+pol:Bundestagslesung a owl:Class ;
+    rdfs:subClassOf pol:Gesetzgebungsverfahren ;
+    rdfs:label "Bundestagslesung"@de .
+
+pol:Evaluierung a owl:Class ;
+    rdfs:subClassOf pol:Gesetzgebungsverfahren ;
+    rdfs:label "Gesetzliche Evaluierung"@de ;
+    rdfs:comment "Obligatorische Überprüfungsklausel in Gesetzen"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 3: Politische Absichten & Maßnahmen
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:PolitischeAbsicht a owl:Class ;
+    rdfs:label "Politische Absicht"@de ;
+    rdfs:comment "Programmatisches Ziel, Koalitionsvertrag, Wahlversprechen"@de .
+
+pol:PolitischeMaßnahme a owl:Class ;
+    rdfs:label "Politische Maßnahme"@de ;
+    rdfs:comment "Konkreter normativer Eingriff in einem Gesetz oder einer Verordnung"@de .
+
+pol:Maßnahmenpaket a owl:Class ;
+    rdfs:subClassOf pol:PolitischeMaßnahme ;
+    rdfs:label "Maßnahmenpaket"@de ;
+    rdfs:comment "Bündel aufeinander aufbauender Regelungen (z.B. stufenweise Quote)"@de .
+
+pol:Ordnungsrechtlicheregelung a owl:Class ;
+    rdfs:subClassOf pol:PolitischeMaßnahme ;
+    rdfs:label "Ordnungsrechtliche Regelung"@de ;
+    rdfs:comment "Verbote, Gebote, Grenzwerte"@de .
+
+pol:Fördermaßnahme a owl:Class ;
+    rdfs:subClassOf pol:PolitischeMaßnahme ;
+    rdfs:label "Fördermaßnahme"@de .
+
+pol:Mieterschutzregelung a owl:Class ;
+    rdfs:subClassOf pol:PolitischeMaßnahme ;
+    rdfs:label "Mieterschutzregelung"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 4: Akteure
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:Akteur a owl:Class ;
+    rdfs:label "Akteur"@de .
+
+pol:Person a owl:Class ;
+    rdfs:subClassOf pol:Akteur ;
+    rdfs:label "Person"@de .
+
+pol:Politiker a owl:Class ;
+    rdfs:subClassOf pol:Person ;
+    rdfs:label "Politiker:in"@de .
+
+pol:Experte a owl:Class ;
+    rdfs:subClassOf pol:Person ;
+    rdfs:label "Fachexpert:in"@de .
+
+pol:Organisation a owl:Class ;
+    rdfs:subClassOf pol:Akteur ;
+    rdfs:label "Organisation"@de .
+
+pol:Ministerium a owl:Class ;
+    rdfs:subClassOf pol:Organisation ;
+    rdfs:label "Bundesministerium"@de .
+
+pol:Partei a owl:Class ;
+    rdfs:subClassOf pol:Organisation ;
+    rdfs:label "Politische Partei"@de .
+
+pol:Verband a owl:Class ;
+    rdfs:subClassOf pol:Organisation ;
+    rdfs:label "Interessenverband"@de .
+
+pol:Denkfabrik a owl:Class ;
+    rdfs:subClassOf pol:Organisation ;
+    rdfs:label "Denkfabrik / Think Tank / Institut"@de .
+
+pol:NGO a owl:Class ;
+    rdfs:subClassOf pol:Organisation ;
+    rdfs:label "Nichtregierungsorganisation"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 5: Stellungnahmen & Positionen
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:Stellungnahme a owl:Class ;
+    rdfs:label "Stellungnahme"@de ;
+    rdfs:comment "Formelle oder informelle Äußerung eines Akteurs zu einem Rechtsinstrument oder einer Maßnahme"@de .
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+#  KLASSEN — Ebene 6: Wirtschaftliche & ökologische Folgen
+# ───────────────────────────────────────────────────────────────────────────────
+
+pol:WirtschaftlicheFolge a owl:Class ;
+    rdfs:label "Wirtschaftliche Folge"@de ;
+    rdfs:comment "Prognostizierter oder empirisch belegter wirtschaftlicher/fiskalischer/ökologischer Effekt"@de .
+
+pol:Haushaltswirkung a owl:Class ;
+    rdfs:subClassOf pol:WirtschaftlicheFolge ;
+    rdfs:label "Haushaltswirkung"@de .
+
+pol:KlimaFolge a owl:Class ;
+    rdfs:subClassOf pol:WirtschaftlicheFolge ;
+    rdfs:label "Klimafolge / Emissionseffekt"@de .
+
+pol:MarktFolge a owl:Class ;
+    rdfs:subClassOf pol:WirtschaftlicheFolge ;
+    rdfs:label": Marktfolge / Wettbewerbseffekt"@de .
+
+pol:SozialFolge a owl:Class ;
+    rdfs:subClassOf pol:WirtschaftlicheFolge ;
+    rdfs:label "Sozialfolge (Mieter, Verbraucher)"@de .
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  OBJECT PROPERTIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Gesetz → Gesetz ────────────────────────────────────────────────────────────
+pol:ändert a owl:ObjectProperty ;
+    rdfs:label "ändert"@de ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:löstAb a owl:ObjectProperty ;
+    rdfs:label "löst ab"@de ;
+    rdfs:subPropertyOf pol:ändert ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:setztUm a owl:ObjectProperty ;
+    rdfs:label "setzt um"@de ;
+    rdfs:domain pol:Bundesgesetz ;
+    rdfs:range  pol:EURichtlinie ;
+    rdfs:comment "Nationales Gesetz setzt EU-Richtlinie in nationales Recht um"@de .
+
+pol:referenziertFür a owl:ObjectProperty ;
+    rdfs:label "referenziert für"@de ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+# ── Gesetz → Maßnahme ──────────────────────────────────────────────────────────
+pol:enthältMaßnahme a owl:ObjectProperty ;
+    rdfs:label "enthält Maßnahme"@de ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+# ── Gesetz → Evaluierung ───────────────────────────────────────────────────────
+pol:hatEvaluierung a owl:ObjectProperty ;
+    rdfs:label "hat Evaluierungsklausel"@de ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:Evaluierung .
+
+# ── Gesetzgebungsverfahren ─────────────────────────────────────────────────────
+pol:verabschiedet a owl:ObjectProperty ;
+    rdfs:label "verabschiedet"@de ;
+    rdfs:domain pol:Gesetzgebungsverfahren ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:hatFederführung a owl:ObjectProperty ;
+    rdfs:label "hat Federführung"@de ;
+    rdfs:domain pol:Gesetzgebungsverfahren ;
+    rdfs:range  pol:Ministerium .
+
+pol:folgend a owl:ObjectProperty ;
+    rdfs:label "nächster Verfahrensschritt"@de ;
+    rdfs:domain pol:Gesetzgebungsverfahren ;
+    rdfs:range  pol:Gesetzgebungsverfahren .
+
+# ── Politische Absicht → Gesetz ───────────────────────────────────────────────
+pol:begründet a owl:ObjectProperty ;
+    rdfs:label "begründet"@de ;
+    rdfs:domain pol:PolitischeAbsicht ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+# ── Person / Organisation ─────────────────────────────────────────────────────
+pol:leitet a owl:ObjectProperty ;
+    rdfs:label "leitet"@de ;
+    rdfs:domain pol:Person ;
+    rdfs:range  pol:Organisation .
+
+pol:gehörtZu a owl:ObjectProperty ;
+    rdfs:label "gehört zu"@de ;
+    rdfs:domain pol:Person ;
+    rdfs:range  pol:Partei .
+
+pol:unterzeichnet a owl:ObjectProperty ;
+    rdfs:label "unterzeichnet"@de ;
+    rdfs:domain pol:Partei ;
+    rdfs:range  pol:PolitischeAbsicht .
+
+# ── Akteur → Gesetz (Stellungnahme / Position) ────────────────────────────────
+pol:unterstützt a owl:ObjectProperty ;
+    rdfs:label "unterstützt"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:lehntAb a owl:ObjectProperty ;
+    rdfs:label "lehnt ab"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:kritisiertTeilweise a owl:ObjectProperty ;
+    rdfs:label "kritisiert teilweise"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  [ owl:unionOf ( pol:RechtlichesInstrument pol:PolitischeMaßnahme ) ] .
+
+pol:konstruktiv a owl:ObjectProperty ;
+    rdfs:label "äußert sich konstruktiv zu"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:prognostiziert a owl:ObjectProperty ;
+    rdfs:label "prognostiziert"@de ;
+    rdfs:domain pol:Organisation ;
+    rdfs:range  pol:WirtschaftlicheFolge .
+
+pol:zitiert a owl:ObjectProperty ;
+    rdfs:label "zitiert"@de ;
+    rdfs:domain pol:Person ;
+    rdfs:range  pol:WirtschaftlicheFolge .
+
+pol:verantwortet a owl:ObjectProperty ;
+    rdfs:label "verantwortet politisch"@de ;
+    rdfs:domain pol:Person ;
+    rdfs:range  pol:RechtlichesInstrument .
+
+pol:hatAusgearbeitet a owl:ObjectProperty ;
+    rdfs:label "hat ausgearbeitet"@de ;
+    rdfs:domain pol:Person ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+pol:fordertAnpassung a owl:ObjectProperty ;
+    rdfs:label "fordert Anpassung"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+pol:fordertKontrolle a owl:ObjectProperty ;
+    rdfs:label "fordert Kontrollbefugnis"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+pol:fordertVollzugssicherheit a owl:ObjectProperty ;
+    rdfs:label "fordert Vollzugssicherheit"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+pol:fordertStärkung a owl:ObjectProperty ;
+    rdfs:label "fordert Stärkung"@de ;
+    rdfs:domain pol:Akteur ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+# ── Maßnahme → Folge ──────────────────────────────────────────────────────────
+pol:führtZu a owl:ObjectProperty ;
+    rdfs:label "führt zu"@de ;
+    rdfs:domain [ owl:unionOf ( pol:RechtlichesInstrument pol:PolitischeMaßnahme ) ] ;
+    rdfs:range  pol:WirtschaftlicheFolge .
+
+pol:begrenzt a owl:ObjectProperty ;
+    rdfs:label "begrenzt"@de ;
+    rdfs:domain pol:PolitischeMaßnahme ;
+    rdfs:range  pol:WirtschaftlicheFolge .
+
+pol:vollziehungsrelevantFür a owl:ObjectProperty ;
+    rdfs:label "vollziehungsrelevant für"@de ;
+    rdfs:domain pol:RechtlichesInstrument ;
+    rdfs:range  pol:PolitischeMaßnahme .
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  DATA PROPERTIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pol:hatDatum a owl:DatatypeProperty ;
+    rdfs:label "hat Datum"@de ;
+    rdfs:range xsd:string .
+
+pol:hatStatus a owl:DatatypeProperty ;
+    rdfs:label "hat Status"@de ;
+    rdfs:comment "z.B. Regierungsentwurf, In Kraft, Abgelöst"@de ;
+    rdfs:range xsd:string .
+
+pol:hatTendenz a owl:DatatypeProperty ;
+    rdfs:label "hat politische Tendenz"@de ;
+    rdfs:comment "pro | konstruktiv | kritisch | ablehnend"@de ;
+    rdfs:range xsd:string .
+
+pol:hatRolle a owl:DatatypeProperty ;
+    rdfs:label "hat institutionelle Rolle"@de ;
+    rdfs:range xsd:string .
+
+pol:anzahlStellung a owl:DatatypeProperty ;
+    rdfs:label "Anzahl Stellungnahmen im Lobbyregister"@de ;
+    rdfs:range xsd:integer .
+
+pol:hatBeschreibung a owl:DatatypeProperty ;
+    rdfs:label "Beschreibung"@de ;
+    rdfs:range xsd:string .

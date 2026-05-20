@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Policy Knowledge Graph — GModG 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ── Inline data (kein externer Datei-Load nötig) ──────────────────────────────
+window.KG_ONTOLOGY = {
+  classes: [
+    { id:"Bundesgesetz",          label:"Bundesgesetz",             color:"#1976D2" },
+    { id:"EURechtakt",            label:"EU-Rechtsakt",             color:"#42A5F5" },
+    { id:"Gesetzgebungsverfahren",label:"Gesetzgebungsverfahren",   color:"#E65100" },
+    { id:"PolitischeMaßnahme",    label:"Politische Maßnahme",      color:"#2E7D32" },
+    { id:"Maßnahmenpaket",        label:"Maßnahmenpaket",           color:"#66BB6A" },
+    { id:"Person",                label:"Person / Politiker:in",    color:"#6A1B9A" },
+    { id:"Ministerium",           label:"Ministerium",              color:"#C62828" },
+    { id:"Partei",                label:"Partei",                   color:"#AD1457" },
+    { id:"Verband",               label:"Verband / Industrie",      color:"#00695C" },
+    { id:"Denkfabrik",            label:"Denkfabrik / Institut",    color:"#4527A0" },
+    { id:"WirtschaftlicheFolge",  label:"Wirtschaftliche Folge",    color:"#B71C1C" },
+    { id:"Evaluierung",           label:"Evaluierung",              color:"#F57F17" },
+    { id:"PolitischeAbsicht",     label:"Politische Absicht",       color:"#795548" },
+    { id:"Kommune",               label:"Kommune",                   color:"#2E7D32" }
+  ]
+};
+
+window.KG_DATA = {
+  nodes: [
+    // Gesetze
+    { id:"GModG",         label:"GModG",           fullLabel:"Gebäudemodernisierungsgesetz",                   type:"Bundesgesetz",           status:"Regierungsentwurf", date:"2026-05-13", desc:"Kerngesetz: Reform GEG, 1:1 EPBD-Umsetzung, freie Heizungswahl, Bio-Treppe. Kabinettsbeschluss 13.5.2026. Federführung BMWE (Reiche/CDU) und BMWSB (Hubertz/SPD)." },
+    { id:"GEG_Alt",       label:"GEG (Ampel)",     fullLabel:"Gebäudeenergiegesetz Ampel-Novelle 2023/2024",   type:"Bundesgesetz",           status:"wird abgelöst",     date:"2024",       desc:"Ampel-Novelle mit umstrittener 65%-EE-Pflicht beim Heizen. Betriebsverbote für Heiztechnologien. Wird durch GModG ersetzt." },
+    { id:"GEIG",          label:"GEIG",            fullLabel:"Gebäude-Elektromobilitätsinfrastruktur-Gesetz",  type:"Bundesgesetz",           status:"geändert",          desc:"Anpassung der Anforderungen an Ladeinfrastruktur in Gebäuden im Kontext der EPBD-Umsetzung." },
+    { id:"CO2KostAufG",   label:"CO₂KostAufG",     fullLabel:"Kohlendioxidkostenaufteilungsgesetz",            type:"Bundesgesetz",           status:"geändert",          desc:"Ab 1.1.2028: hälftige Kostenteilung Mieter/Vermieter bei neu eingebauten Fossil-Heizungen. Ab 1.1.2029: auch biogene Mehrkosten (Bio-Treppe Stufen 1–3)." },
+    { id:"BGB",           label:"BGB §559 ff.",    fullLabel:"Bürgerliches Gesetzbuch §559 ff.",               type:"Bundesgesetz",           status:"geändert",          desc:"Mietrechtliche Flankierung: Schutz vor überhöhten Modernisierungsumlagen bei Einbau unwirtschaftlicher Fossil-Heizungen." },
+    { id:"EnWG",          label:"EnWG",            fullLabel:"Energiewirtschaftsgesetz 2005",                   type:"Bundesgesetz",           status:"geändert",          desc:"Anpassungen im Bereich Gasnetze und Biogaseinspeisung im Zusammenhang mit der Grüngasquote." },
+    { id:"SchfHwG",       label:"SchfHwG",         fullLabel:"Schornsteinfeger-Handwerksgesetz",               type:"Bundesgesetz",           status:"geändert",          desc:"Erweiterte Kontroll- und Prüfaufgaben des Bezirksschornsteinfegers für Bio-Treppe-Vollzug." },
+    { id:"OWiG",          label:"OWiG",            fullLabel:"Ordnungswidrigkeitengesetz 1968",                type:"Bundesgesetz",           status:"geändert",          desc:"Neue Bußgeldtatbestände zur Durchsetzung der Bio-Treppe-Pflichten." },
+    { id:"EPBD",          label:"EPBD 2024/1275",  fullLabel:"EU-Gebäuderichtlinie (EU) 2024/1275",           type:"EURechtakt",             status:"wird umgesetzt",    date:"2024", wikidataId:"Q847166", wikipedia:"Geb%C3%A4udeenergierichtlinie", desc:"Gesamtenergieeffizienz-Anforderungen, Ausweispflichten, Mindestenergiestandards, Null-Emissionsstandard für Neubauten." },
+    { id:"KSG",           label:"KSG",             fullLabel:"Klimaschutzgesetz",                              type:"Bundesgesetz",           status:"Referenzgesetz",    desc:"Referenzrahmen für Evaluierungsklausel 2030 und Ziel Klimaneutralität 2045." },
+    { id:"WPG",           label:"WPG",             fullLabel:"Wärmeplanungsgesetz",                            type:"Bundesgesetz",           status:"In Kraft",          date:"2023",       desc:"Verpflichtet Gemeinden >100.000 EW zur kommunalen Wärmeplanung bis 30.6.2026 (§13: 30-Tage-Offenlage; §16 Abs. 1: Potenzialanalyse-Pflicht). Strategisches Steuerungsinstrument ohne Anschlusszwang für Bürger." },
+    { id:"WPGÄnderung",   label:"WPG-Novelle",     fullLabel:"Entwurf: Gesetz zur Änderung des Wärmeplanungsgesetzes", type:"Bundesgesetz",  status:"Referentenentwurf", date:"2026",       desc:"Bestätigt: Wärmeplanung bleibt verpflichtendes strategisches Instrument. Deadline 30.6.2026 für Großstädte bleibt. Auswirkungen des GModG (Wegfall 65%-EE-Pflicht) sollen in Fortschreibungen berücksichtigt werden." },
+    // Verfahren
+    { id:"Kabinett",      label:"Kabinetts­beschluss\n13.5.2026", fullLabel:"Kabinettsbeschluss 13. Mai 2026", type:"Gesetzgebungsverfahren", date:"2026-05-13",          desc:"GModG als Regierungsentwurf beschlossen. Nächster Schritt: Einbringung Bundestag Sommer 2026." },
+    { id:"BT_Einbringung",label:"Bundestags­einbringung\nSommer 2026", fullLabel:"Einbringung Bundestag (geplant Sommer 2026)", type:"Gesetzgebungsverfahren", date:"2026-Q3", desc:"Anhörung Sachverständige im Ausschuss für Klimaschutz und Energie geplant." },
+    { id:"Eval2030",      label:"Evaluierung\n2030", fullLabel:"Gesetzliche Evaluierungsklausel 2030",         type:"Evaluierung",            date:"2030",                desc:"Evaluierung mit Bezug auf Klimaschutzgesetz und Klimaneutralität 2045. Ermöglicht Nachschärfung." },
+    // Absicht
+    { id:"Koalitionsvertrag", label:"Koalitions­vertrag\nCDU/CSU–SPD", fullLabel:"Koalitionsvertrag CDU/CSU–SPD (Merz-Regierung)", type:"PolitischeAbsicht", desc:"GModG als zentrales Vorhaben: GEG technologieoffener, flexibler, praxistauglicher und einfacher gestalten." },
+    // Maßnahmen
+    { id:"Abschaffung65",     label:"Abschaffung\n65%-EE-Pflicht",  fullLabel:"Abschaffung der 65%-Erneuerbare-Energien-Pflicht", type:"PolitischeMaßnahme", desc:"Vorgabe zur Nutzung von mindestens 65% erneuerbarer Energien beim Heizen entfällt ersatzlos. Betriebsverbote für Heiztechnologien gestrichen." },
+    { id:"FreieHeizung",      label:"Freie Heizungs­wahl",          fullLabel:"Technologieoffene freie Heizungswahl",              type:"PolitischeMaßnahme", desc:"Wärmepumpe, Hybridheizung, Biomasse-Pellets, Fernwärme, Gas- und Ölheizungen wieder vollständig zulässig. Wärmepumpenförderung bleibt." },
+    { id:"BioTreppe",         label:"Bio-Treppe\n(ab 2029)",        fullLabel:"Biogene Beimischquote (Bio-Treppe)",                type:"Maßnahmenpaket",    desc:"2029: 10% biogener Anteil · 2030: 15% · 2035: 30% · 2040: 60%. Biomethan, Bioheizöl, biogenes Flüssiggas, grüner Wasserstoff." },
+    { id:"Mieterschutz",      label:"Mieterschutz\nCO₂KostAufG",   fullLabel:"Mieterschutzregelung via CO₂KostAufG",              type:"PolitischeMaßnahme", desc:"Ab 2028: hälftige CO₂-Kostenteilung Mieter/Vermieter. Ab 2029: Mehrkosten biogene Beimischung. SPD-Durchsetzungserfolg laut Roloff." },
+    { id:"EPBDUmsetzung",     label:"1:1 EPBD-\nUmsetzung",        fullLabel:"1:1-Umsetzung EU-Gebäuderichtlinie",                type:"PolitischeMaßnahme", desc:"Kein Gold-Plating. Null-Emissionsstandard für Neubauten, Ausweispflichten, Mindestenergiestandards beim Kauf/Verkauf." },
+    // Ministerien
+    { id:"BMWE",  label:"BMWE",  fullLabel:"Bundesministerium für Wirtschaft & Energie",                  type:"Ministerium", wikidataId:"Q320037", wikipedia:"Bundesministerium_f%C3%BCr_Wirtschaft_und_Energie", desc:"Federführendes Ressort (Katherina Reiche, CDU). Leitet GModG-Gesetzgebungsverfahren." },
+    { id:"BMWSB", label:"BMWSB", fullLabel:"Bundesministerium für Wohnen, Stadtentwicklung & Bauwesen",  type:"Ministerium", wikidataId:"Q108729686", wikipedia:"Bundesministerium_f%C3%BCr_Wohnen,_Stadtentwicklung_und_Bauwesen", desc:"Co-federführendes Ressort (Verena Hubertz, SPD). Schwerpunkt Mieterschutz und Wohnungswirtschaft." },
+    { id:"BMJ",   label:"BMJ",   fullLabel:"Bundesministerium der Justiz",                                type:"Ministerium", wikidataId:"Q317348",   wikipedia:"Bundesministerium_der_Justiz", desc:"Mietrechtliche Schutzregelungen (CO₂KostAufG-Änderungen) ausgearbeitet (Stefanie Hubig, SPD)." },
+    // Parteien
+    { id:"CDU",   label:"CDU",   type:"Partei", wikidataId:"Q49762", wikipedia:"Christlich_Demokratische_Union_Deutschlands", desc:"Koalitionspartei. Kurs: Technologieoffenheit, Eigentumsfreiheit, Planungssicherheit. Trägt GModG als Koalitionsversprechen." },
+    { id:"CSU",   label:"CSU",   type:"Partei", wikidataId:"Q49761", wikipedia:"Christlich-Soziale_Union_in_Bayern", desc:"Koalitionspartei (gemeinsame Fraktion mit CDU). Betont kommunale und regionale Anwendbarkeit des GModG." },
+    { id:"SPD",   label:"SPD",   type:"Partei", wikidataId:"Q49763", wikipedia:"Sozialdemokratische_Partei_Deutschlands", desc:"Koalitionspartei. Schwerpunkt: Mieterschutz als SPD-Durchsetzungserfolg im Koalitionskompromiss." },
+    { id:"Grüne", label:"Grüne", type:"Partei", wikidataId:"Q49766", wikipedia:"B%C3%BCndnis_90/Die_Gr%C3%BCnen", desc:"Bundesopposition. Ablehnung: GModG droht Rückschritt, Klimaziele 2045 gefährdet, Gaslobby hat sich durchgesetzt." },
+    { id:"AfD",   label:"AfD",   type:"Partei", wikidataId:"Q23911",  wikipedia:"Alternative_f%C3%BCr_Deutschland", desc:"Opposition. Fordert vollständige GEG-Abschaffung inkl. CO₂-Steuer und EU-ETS. GModG sei nur Umbenennung." },
+    { id:"Linke", label:"Linke/BSW", type:"Partei", wikidataId:"Q49764", wikipedia:"Die_Linke", desc:"Opposition. Kritisiert sozialen Kurs der Koalition; zweifelt ob SPD beim Mieterschutz standhaft bleibt." },
+    // Personen
+    { id:"Reiche",     label:"K. Reiche",     fullLabel:"Katherina Reiche (CDU, BMWE)",    type:"Person", party:"CDU", tendenz:"pro",        role:"Bundesministerin BMWE", desc:"\"Wir ersetzen ein Gesetz, das viele Menschen verunsichert hat. Weniger Ideologie, mehr Pragmatismus, mehr Freiheit.\"" },
+    { id:"Hubertz",    label:"V. Hubertz",    fullLabel:"Verena Hubertz (SPD, BMWSB)",     type:"Person", party:"SPD", tendenz:"pro",        role:"Bundesministerin BMWSB", desc:"\"Mit dem GModG holen wir zurück, was lange gefehlt hat: Klarheit, Verlässlichkeit, Vertrauen.\"" },
+    { id:"Hubig",      label:"S. Hubig",      fullLabel:"Stefanie Hubig (SPD, BMJ)",       type:"Person", party:"SPD", tendenz:"konstruktiv", role:"Bundesministerin BMJ", desc:"Hat mietrechtliche Schutzregelungen konstruktiv ausgearbeitet. Von Hubertz ausdrücklich gedankt." },
+    { id:"Merz",       label:"F. Merz",       fullLabel:"Friedrich Merz (CDU, Bundeskanzler)", type:"Person", party:"CDU", tendenz:"pro",    role:"Bundeskanzler", wikidataId:"Q41048", wikipedia:"Friedrich_Merz", desc:"GModG ist zentrales Vorhaben aus dem Koalitionsvertrag seiner CDU/CSU-SPD-Bundesregierung." },
+    { id:"MüllerS",    label:"S. Müller",     fullLabel:"Sepp Müller MdB (CDU, Parl. StS BMWE)", type:"Person", party:"CDU", tendenz:"pro", role:"Parl. Staatssekretär BMWE", wikidataId:"Q95088386", wikipedia:"Sepp_M%C3%BCller_(Politiker)", desc:"\"Wir beenden die Verunsicherung. Freiheit statt Verbote.\" Betont Abschaffung der 30-Jahre-Regel." },
+    { id:"Roloff",     label:"S. Roloff",     fullLabel:"Sebastian Roloff MdB (SPD)",      type:"Person", party:"SPD", tendenz:"pro",        role:"MdB (SPD)", desc:"\"SPD hat zentrale Punkte durchgesetzt: mehr Mieterschutz und klare Kostenbremse.\" (3 LinkedIn-Beiträge)" },
+    { id:"Brinkmann",  label:"L. Brinkmann",  fullLabel:"Lutz Brinkmann MdB (SPD)",        type:"Person", party:"SPD", tendenz:"pro",        role:"MdB (SPD)", desc:"\"Keine Pflicht, funktionierende Heizungen auszutauschen. Eigentümer entscheiden wieder selbst.\"" },
+    { id:"Badum",      label:"L. Badum",      fullLabel:"Lisa Badum MdB (Grüne)",          type:"Person", party:"Grüne", tendenz:"ablehnend", role:"MdB (Grüne)", wikidataId:"Q87726390", wikipedia:"Lisa_Badum", desc:"\"Die Gaslobby hat sich durchgesetzt. CDU und SPD blockieren aktiv die parlamentarische Behandlung.\"" },
+    { id:"TaherSaleh", label:"K.T. Saleh",    fullLabel:"Kassem Taher Saleh MdB (Grüne)", type:"Person", party:"Grüne", tendenz:"ablehnend", role:"MdB (Grüne)", wikidataId:"Q108824959", wikipedia:"Kassem_Taher_Saleh", desc:"Öko-Institut: GModG erhöht Emissionen bis 2040 um bis zu 172 Mio. t CO₂. \"CDU setzt populistisches Wahlkampfversprechen um, SPD knickt ein.\"" },
+    { id:"Kipping",    label:"K. Kipping",    fullLabel:"Katja Kipping (Linke/BSW)",       type:"Person", party:"Linke", tendenz:"kritisch",  role:"MdB (Linke/BSW)", wikidataId:"Q76956", wikipedia:"Katja_Kipping", desc:"\"Meint ihr, wird die SPD standhaft bleiben und Mieterschutz verbindlich verankern?\"" },
+    { id:"Bernhard",   label:"M. Bernhard",   fullLabel:"Marc Bernhard MdB (AfD)",         type:"Person", party:"AfD", tendenz:"ablehnend",  role:"MdB (AfD)", desc:"\"Das GModG trägt zwar einen neuen Namen, doch ist es nichts anderes als alter Wein in neuen Schläuchen.\"" },
+    { id:"Stümpfig",   label:"M. Stümpfig",  fullLabel:"Martin Stümpfig MdL Bayern (Grüne)", type:"Person", party:"Grüne", tendenz:"ablehnend", role:"MdL Bayern", wikidataId:"Q96287022", wikipedia:"Martin_St%C3%BCmpfig", desc:"\"Gas- und Ölheizungen sind eine Kostenfalle! Öko-Institut: +172 Mio. t CO₂ bis 2040. Merz und Reiche liegen komplett daneben.\"" },
+    // Verbände
+    { id:"BAK",     label:"BAK",     fullLabel:"Bundesarchitektenkammer",           type:"Verband", tendenz:"konstruktiv", desc:"Fordert rechtliche Konsistenz und Praxistauglichkeit; GModG soll investitionssicher sein. 3 Stellungnahmen." },
+    { id:"BDEW",    label:"BDEW",    fullLabel:"Energie- & Wasserwirtschaft (BDEW)", type:"Verband", tendenz:"konstruktiv", desc:"Fordert Anpassungen bei Grüngasquote und Netzintegration; begrüßt technologieoffenen Ansatz. 1 Stellungnahme (10 S.)." },
+    { id:"VDMA",    label:"VDMA",    fullLabel:"Maschinen- & Anlagenbau (VDMA)",    type:"Verband", tendenz:"konstruktiv", wikidataId:"Q698879", wikipedia:"Verband_Deutscher_Maschinen-_und_Anlagenbau", desc:"Praxistauglichkeit und Technologieneutralität; 9 Stellungnahmen u.a. zur Wärmepumpenförderung." },
+    { id:"BSWSolar",label:"BSW Solar",fullLabel:"Bundesverband Solarwirtschaft",    type:"Verband", tendenz:"kritisch",    desc:"Fordert stärkere Berücksichtigung von Solar und erneuerbaren Energien. 1 Stellungnahme." },
+    { id:"VDPM",    label:"VDPM",    fullLabel:"Dämmsysteme, Putz & Mörtel (VDPM)",type:"Verband", tendenz:"kritisch",    desc:"Fordert verstärkte Berücksichtigung von Energieeffizienzmaßnahmen (Dämmung) zur EPBD-Umsetzung. 1 Stellungnahme." },
+    { id:"BBS",     label:"BBS",     fullLabel:"Bundesverband Baustoffe (BBS)",     type:"Verband", tendenz:"positiv",     desc:"Grundsätzlich für GModG; fordert konsistente Umsetzung für GEG, CO₂KostAufG, BGB und GEIG. 1 Stellungnahme." },
+    { id:"DMB",     label:"DMB",     fullLabel:"Deutscher Mieterbund",              type:"Verband", tendenz:"kritisch",    wikidataId:"Q1502451", wikipedia:"Deutscher_Mieterbund", desc:"Fordert konsequente Umsetzung des Mieterschutzes; warnt vor erheblichen Kostenrisiken für Mieter. 1 Stellungnahme." },
+    { id:"ZIV",     label:"ZIV",     fullLabel:"Schornsteinfegerhandwerk (ZIV)",    type:"Verband", tendenz:"konstruktiv", desc:"Fordert Vollzugssicherheit der Bio-Treppe und EPBD-Umsetzung; will Kontrollbefugnisse. 3 Stellungnahmen." },
+    { id:"SEFE",    label:"SEFE",    fullLabel:"Securing Energy for Europe (SEFE)", type:"Verband", tendenz:"positiv",     desc:"Unterstützt Grüngasquote; sieht Potenzial für Gasnetze und biogene Gase. 1 Stellungnahme." },
+    { id:"DENEFF",  label:"DENEFF",  fullLabel:"DENEFF / EDL_HUB",                 type:"Verband", tendenz:"konstruktiv", desc:"Rechtssichere, investitionsfördernde und EPBD-kohärente Ausgestaltung der Energieeffizienzpflichten. 1 Stellungnahme (16 S.)." },
+    // Denkfabriken / NGOs
+    { id:"StiftKlima", label:"Stiftung\nKlimaneutralität", fullLabel:"Stiftung Klimaneutralität", type:"Denkfabrik", tendenz:"kritisch", desc:"Betriebskostendeckel und Modernisierungsumlage im BGB; vollzugsfeste Bio-Treppe (Versorgungsvertrag, Schornsteinfeger-Prüfung). 2 Stellungnahmen." },
+    { id:"Agora",      label:"Agora",       fullLabel:"Agora Think Tanks",         type:"Denkfabrik", tendenz:"kritisch",   desc:"Grüngasquote kein geeignetes Instrument zur Dekarbonisierung; warnt vor Rebound-Effekten. 2 Stellungnahmen." },
+    { id:"ÖkoInstitut",label:"Öko-Institut",fullLabel:"Öko-Institut",              type:"Denkfabrik", tendenz:"kritisch",   wikidataId:"Q693965", wikipedia:"%C3%96ko-Institut", desc:"Prognose: GModG erhöht CO₂-Emissionen bis 2040 um bis zu 172 Mio. t. Wird von Grünen-Abgeordneten zitiert." },
+    { id:"DNR",        label:"DNR",         fullLabel:"Deutscher Naturschutzring", type:"Verband",    tendenz:"ablehnend",  wikidataId:"Q1218847", wikipedia:"Deutscher_Naturschutzring", desc:"Fordert Festhalten an der 65%-Regel; stellt sich grundsätzlich gegen Reform. Verfassungsrechtliche Bedenken. 1 Stellungnahme." },
+    { id:"GermanZero", label:"GermanZero",  fullLabel:"GermanZero e.V.",           type:"Verband",    tendenz:"kritisch",   desc:"Zweifelt an Klimaschutzwirkung; warnt vor Verfehlung der Klimaziele 2045. 2 Stellungnahmen." },
+    { id:"BIngK", label:"BIngK", fullLabel:"Bundesingenieurkammer", type:"Verband", tendenz:"kritisch", date:"2026-05-19", desc:"Kabinettsbeschluss 19.5.2026: BIngK sieht erhebliche Defizite im GModG. Formelle Stellungnahme zum Gesetzestext. Bezug: GModG, Klimaschutzgesetz, CO₂KostAufG, EU-Gebäuderichtlinie." },
+    // Wirtschaftliche Folgen
+    { id:"CO2Anstieg",       label:"+172 Mio. t CO₂\nbis 2040",       fullLabel:"CO₂-Emissionserhöhung bis 2040",      type:"WirtschaftlicheFolge", desc:"Öko-Institut-Prognose: bis zu 172 Mio. t CO₂ mehr bis 2040 durch GModG gegenüber Referenzszenario. Wird von Grünen-Fraktion und GermanZero zitiert." },
+    { id:"KWPDüsseldorf",   label:"KWP\nDüsseldorf",  fullLabel:"Kommunale Wärmeplanung Düsseldorf",          type:"PolitischeMaßnahme",    date:"2026-06-30",          desc:"Strategisches Planungsinstrument zur klimaneutralen Wärmeversorgung bis 2045. 93 Zonen (24 zentral, 69 dezentral, 3 Wasserstoff). Endenergieverbrauch: 8.700 GWh/a (92% fossil). Techn. Potenzial: 11,5–13,4 TWh/a. Offenlage: 19.12.2025–30.1.2026. 27 Stellungnahmen. Deadline gemäß WPG: 30.6.2026. Präsentation im Ausschuss für Umwelt, Klima & Verbraucherschutz am 18.5.2026." },
+    { id:"Düsseldorf",      label:"Düsseldorf",        fullLabel:"Landeshauptstadt Düsseldorf — Amt für Umwelt- und Verbraucherschutz", type:"Kommune", date:"2026-05-18", desc:"Pflichtaufgabe Wärmeplanung gemäß WPG. Zielszenario 2045: 24 Zonen Fernwärme, 69 Zonen dezentral, 3 Zonen Wasserstoff/Industrie. Kein Anschlusszwang für Bürger. Transformationspfad bleibt sinnvoll — GModG-Auswirkungen werden beobachtet." },
+    { id:"Planungssicherheit",label:"Planungssicher­heit\nBauindustrie",fullLabel:"Planungssicherheit für Bauindustrie", type:"WirtschaftlicheFolge", desc:"Jedes zweite Bauunternehmen berichtet von Auftragsmangel (Knoerig, CDU). GModG soll langfristige Investitionssicherheit schaffen." },
+    { id:"ChancenGrüngas",   label:"Wirtschafts­chancen\nGrüngas",     fullLabel:"Wirtschaftschancen biogene Gase",     type:"WirtschaftlicheFolge", desc:"Neue Märkte für Biomethan, Bioheizöl, biogenes Flüssiggas und grünen Wasserstoff durch schrittweise Bio-Treppe (Rouenhoff, CDU)." },
+    { id:"KostenrisikoMieter",label:"Kostenrisiko\nMieter",            fullLabel:"Kostenrisiko für Mieter",             type:"WirtschaftlicheFolge", desc:"Mieter tragen höhere Energiekosten durch Heizungsentscheidungen, die sie nicht kontrollieren (Katharina Beck, Grüne; Deutscher Mieterbund)." },
+    // ── Kommunen & kommunale Klimaprogramme ─────────────────────────────────
+    { id:"Stuttgart",       label:"Stuttgart",           fullLabel:"Landeshauptstadt Stuttgart",                     type:"Kommune",             desc:"Klimaschutz-Flagship: 100 Mio. €/Jahr Klimapaket. Solaroffensive seit 2022: 300€/kWp für Dach-PV. Balkonkraftwerk-Förderung eingestellt Mai 2026 (Haushaltsdruck)." },
+    { id:"LKLudwigsburg",   label:"LK Ludwigsburg",      fullLabel:"Landkreis Ludwigsburg (BW)",                     type:"Kommune",             desc:"KlimaBonus-Programm (Solarförderung) eingefroren seit Anfang 2026. Derzeit keine aktive kommunale Solarförderung; Neuaufstellung offen." },
+    { id:"KreisMettmann",   label:"Kreis Mettmann",      fullLabel:"Kreis Mettmann (NRW)",                           type:"Kommune",             desc:"Solarförderung: ~66.000 € Jahresbudget, ausschließlich Balkonkraftwerke/Stecker-PV. Vergabe per Losverfahren aufgrund hoher Nachfrage. Kein Dach-PV-Förderprogramm." },
+    { id:"RheinKreisNeuss", label:"Rhein-Kreis\nNeuss",  fullLabel:"Rhein-Kreis Neuss (NRW)",                        type:"Kommune",             desc:"Solarförderung: 50–100€ Pauschalförderung für Stecker-PV (Balkonkraftwerke). Kein Dach-PV-Programm. Geringste Förderhöhe der verglichenen Kreise." },
+    { id:"SolaroffenseSTG", label:"Solaroffensive\nStuttgart", fullLabel:"Solaroffensive Stuttgart",                 type:"PolitischeMaßnahme", date:"2022-01-01", desc:"Kommunales Förderprogramm: 300€/kWp für Dach-PV-Anlagen. Balkonkraftwerk-Förderung eingestellt Mai 2026 (Haushaltspriorisierung). Finanziert aus städtischem Klimapaket (100 Mio. €/Jahr)." },
+    { id:"KWKlimafreundlich",label:"Klimafreundliches\nWohnen DUS", fullLabel:"Klimafreundliches Wohnen und Arbeiten Düsseldorf", type:"PolitischeMaßnahme", date:"2026-10-01", desc:"Kommunales Förderprogramm (Neustart 1.10.2026): 1.000€ Grundförderung + 200€/kWp für Dach-PV. Finanziert aus 60 Mio. € Sondervermögen Klima und Umwelt. Referenziert im Kommunalen Wärmeplan als Maßnahmenbündel 'f'." },
+    { id:"SolaroffenseMettmann",label:"Solarförderung\nMettmann", fullLabel:"Solarförderung Kreis Mettmann",         type:"PolitischeMaßnahme", desc:"Budget ca. 66.000 €/Jahr; ausschließlich Balkonkraftwerke/Stecker-PV förderfähig. Vergabe per Losverfahren. Kein Dach-PV-Förderprogramm im Kreis." },
+    { id:"KlimaBonus_LB",   label:"KlimaBonus\nLudwigsburg", fullLabel:"KlimaBonus Landkreis Ludwigsburg",           type:"PolitischeMaßnahme", desc:"Solarförderprogramm des LK Ludwigsburg — seit Anfang 2026 eingefroren (Haushaltslage). Laufende Anträge nicht mehr bearbeitbar; Neuaufstellung des Programms noch offen." },
+    { id:"SolarBonusNeuss", label:"Stecker-PV\nRhein-Kreis Neuss", fullLabel:"Stecker-PV-Förderung Rhein-Kreis Neuss", type:"PolitischeMaßnahme", desc:"Pauschalförderung 50–100€ für Balkonkraftwerke/Stecker-PV. Kein Dach-PV-Programm. Niedrigschwellig, aber mit geringer Wirkungsdichte." },
+    { id:"HHKlima100STG",   label:"100 Mio. €/Jahr\nKlimapaket STG", fullLabel:"Klimapaket Stuttgart — 100 Mio. €/Jahr", type:"WirtschaftlicheFolge", desc:"Jährliches Klimaschutzbudget der Stadt Stuttgart. Finanzierungsbasis für Solaroffensive und weitere kommunale Klimamaßnahmen. Zeigt kommunale Handlungsbereitschaft unabhängig von Bundesgesetzgebung." },
+    { id:"HHKlima60DUS",    label:"60 Mio. €\nSondervermögen DUS", fullLabel:"Sondervermögen Klima und Umwelt Düsseldorf — 60 Mio. €", type:"WirtschaftlicheFolge", desc:"Einmaliges Sondervermögen der Stadt Düsseldorf. Finanzierungsbasis für Programm 'Klimafreundliches Wohnen und Arbeiten' (Neustart 1.10.2026). Verabschiedet im Stadtrat als Teil der Klimaschutzoffensive." }
+  ],
+
+  links: [
+    // ── GModG löst ab / ändert / setzt um ───────────────────────────────
+    { source:"GModG", target:"GEG_Alt",     relation:"löstAb",          label:"löst ab" },
+    { source:"GModG", target:"EPBD",        relation:"setztUm",         label:"setzt um (1:1)" },
+    { source:"GModG", target:"GEIG",        relation:"ändert",          label:"ändert" },
+    { source:"GModG", target:"CO2KostAufG", relation:"ändert",          label:"ändert",          since:"2028-01-01" },
+    { source:"GModG", target:"BGB",         relation:"ändert",          label:"ändert" },
+    { source:"GModG", target:"EnWG",        relation:"ändert",          label:"ändert" },
+    { source:"GModG", target:"SchfHwG",     relation:"ändert",          label:"ändert",          since:"2029-01-01" },
+    { source:"GModG", target:"OWiG",        relation:"ändert",          label:"ändert",          since:"2029-01-01" },
+    { source:"GModG", target:"KSG",         relation:"referenziertFür", label:"referenziert für Evaluierung 2030" },
+    // ── Gesetzgebungsverfahren ───────────────────────────────────────────
+    { source:"Kabinett",        target:"GModG",          relation:"verabschiedet",  label:"verabschiedet",    since:"2026-05-13" },
+    { source:"BMWE",            target:"Kabinett",        relation:"hatFederführung", label:"hat Federführung" },
+    { source:"BMWSB",           target:"Kabinett",        relation:"hatFederführung", label:"hat Federführung" },
+    { source:"Kabinett",        target:"BT_Einbringung",  relation:"gehtÜberIn",     label:"geht über in",     since:"2026-Q3" },
+    { source:"GModG",           target:"Eval2030",        relation:"schreibtVor",    label:"schreibt vor",     since:"2030-01-01" },
+    { source:"Koalitionsvertrag",target:"GModG",          relation:"begründet",      label:"begründet" },
+    { source:"CDU", target:"Koalitionsvertrag", relation:"unterzeichnet", label:"unterzeichnet" },
+    { source:"SPD", target:"Koalitionsvertrag", relation:"unterzeichnet", label:"unterzeichnet" },
+    // ── Ministerien & Personen ───────────────────────────────────────────
+    { source:"Reiche",    target:"BMWE",  relation:"leitet",   label:"leitet" },
+    { source:"Hubertz",   target:"BMWSB", relation:"leitet",   label:"leitet" },
+    { source:"Hubig",     target:"BMJ",   relation:"leitet",   label:"leitet" },
+    { source:"Reiche",    target:"CDU",   relation:"gehörtZu", label:"gehört zu (CDU)" },
+    { source:"Hubertz",   target:"SPD",   relation:"gehörtZu", label:"gehört zu (SPD)" },
+    { source:"Hubig",     target:"SPD",   relation:"gehörtZu", label:"gehört zu (SPD)" },
+    { source:"Merz",      target:"CDU",   relation:"gehörtZu", label:"gehört zu (CDU)" },
+    { source:"MüllerS",   target:"CDU",   relation:"gehörtZu", label:"gehört zu (CDU)" },
+    { source:"Roloff",    target:"SPD",   relation:"gehörtZu", label:"gehört zu (SPD)" },
+    { source:"Brinkmann", target:"SPD",   relation:"gehörtZu", label:"gehört zu (SPD)" },
+    { source:"Badum",     target:"Grüne", relation:"gehörtZu", label:"gehört zu (Grüne)" },
+    { source:"TaherSaleh",target:"Grüne", relation:"gehörtZu", label:"gehört zu (Grüne)" },
+    { source:"Kipping",   target:"Linke", relation:"gehörtZu", label:"gehört zu (Linke)" },
+    { source:"Bernhard",  target:"AfD",   relation:"gehörtZu", label:"gehört zu (AfD)" },
+    { source:"Stümpfig",  target:"Grüne", relation:"gehörtZu", label:"gehört zu (Grüne)" },
+    // ── GModG schafft ab / ermöglicht / führt ein / verankert ───────────
+    { source:"GModG", target:"Abschaffung65", relation:"schafftAb",   label:"schafft ab" },
+    { source:"GModG", target:"FreieHeizung",  relation:"ermächtigt",  label:"ermächtigt",   since:"2026-05-13" },
+    { source:"GModG", target:"BioTreppe",     relation:"verpflichtet", label:"verpflichtet", since:"2029-01-01" },
+    { source:"GModG", target:"Mieterschutz",  relation:"verankert",    label:"verankert",    since:"2028-01-01" },
+    { source:"GModG", target:"EPBDUmsetzung", relation:"verpflichtet", label:"verpflichtet" },
+    // ── Wirtschaftliche Folgen (epistemisch differenziert) ──────────────
+    // GModG → CO2Anstieg: KEIN Direktlink — Kausalbehauptung kommt vom Öko-Institut, nicht vom Gesetz selbst
+    { source:"GModG",        target:"Planungssicherheit",  relation:"bezweckt",     label:"bezweckt",         since:"2026-05-13" },
+    { source:"FreieHeizung", target:"ChancenGrüngas",      relation:"bezweckt",     label:"bezweckt",         since:"2029-01-01" },
+    { source:"FreieHeizung", target:"KostenrisikoMieter",  relation:"birgtRisiko",  label:"birgt Risiko" },
+    { source:"Mieterschutz", target:"KostenrisikoMieter",  relation:"begrenzt",     label:"begrenzt",         since:"2028-01-01" },
+    // ── Bio-Treppe: Vollzug ──────────────────────────────────────────────
+    { source:"SchfHwG",    target:"BioTreppe", relation:"ermächtigt",           label:"ermächtigt (Vollzug)",  since:"2029-01-01" },
+    { source:"ZIV",        target:"BioTreppe", relation:"fordertKontrollrecht",  label:"fordert Kontrollrecht" },
+    { source:"StiftKlima", target:"BioTreppe", relation:"fordertNachbesserung",  label:"fordert Nachbesserung" },
+    { source:"Hubig",      target:"Mieterschutz", relation:"erarbeitet",         label:"erarbeitet" },
+    // ── Prognosen & Zitate ───────────────────────────────────────────────
+    { source:"ÖkoInstitut",  target:"CO2Anstieg", relation:"prognostiziert", label:"prognostiziert" },
+    { source:"TaherSaleh",   target:"CO2Anstieg", relation:"zitiert",        label:"zitiert",       since:"2026-03-12" },
+    { source:"Stümpfig",     target:"CO2Anstieg", relation:"zitiert",        label:"zitiert",       since:"2026-04-21" },
+    // ── Politische Positionen: befürwortet ──────────────────────────────
+    { source:"Roloff",    target:"GModG", relation:"befürwortet", label:"befürwortet", since:"2026-05-08" },
+    { source:"Brinkmann", target:"GModG", relation:"befürwortet", label:"befürwortet", since:"2026-02-25" },
+    { source:"MüllerS",   target:"GModG", relation:"befürwortet", label:"befürwortet", since:"2026-05-15" },
+    { source:"Merz",      target:"GModG", relation:"verantwortet",label:"verantwortet" },
+    // ── Politische Positionen: lehnt ab ─────────────────────────────────
+    { source:"Badum",      target:"GModG", relation:"lehntAb",    label:"lehnt ab",         since:"2026-02-25" },
+    { source:"TaherSaleh", target:"GModG", relation:"lehntAb",    label:"lehnt ab",         since:"2026-03-12" },
+    { source:"Bernhard",   target:"GModG", relation:"lehntAb",    label:"lehnt ab (zu wenig Reform)", since:"2026-04-17" },
+    { source:"Kipping",    target:"GModG", relation:"kritisiert", label:"kritisiert",        since:"2026-05-13" },
+    { source:"Stümpfig",   target:"GModG", relation:"lehntAb",    label:"lehnt ab",         since:"2026-04-21" },
+    // ── Verbände: begrüßt / kritisiert / befürwortet ─────────────────────
+    { source:"BAK",      target:"GModG", relation:"begrüßt",        label:"begrüßt (mit Vorbehalten)" },
+    { source:"BDEW",     target:"GModG", relation:"begrüßt",        label:"begrüßt (mit Vorbehalten)" },
+    { source:"VDMA",     target:"GModG", relation:"begrüßt",        label:"begrüßt (mit Vorbehalten)" },
+    { source:"BSWSolar", target:"GModG", relation:"kritisiert",     label:"kritisiert" },
+    { source:"VDPM",     target:"GModG", relation:"kritisiert",     label:"kritisiert" },
+    { source:"BBS",      target:"GModG", relation:"befürwortet",    label:"befürwortet" },
+    { source:"DMB",      target:"GModG", relation:"kritisiert",     label:"kritisiert" },
+    { source:"ZIV",      target:"GModG", relation:"begrüßt",        label:"begrüßt (mit Vorbehalten)" },
+    { source:"SEFE",     target:"GModG", relation:"befürwortet",    label:"befürwortet" },
+    { source:"DENEFF",   target:"GModG", relation:"begrüßt",        label:"begrüßt (mit Vorbehalten)" },
+    { source:"StiftKlima",target:"GModG",relation:"kritisiert",     label:"kritisiert" },
+    { source:"Agora",    target:"GModG", relation:"kritisiert",     label:"kritisiert" },
+    { source:"DNR",      target:"GModG", relation:"lehntAb",        label:"lehnt ab" },
+    { source:"GermanZero",target:"GModG",        relation:"kritisiert", label:"kritisiert" },
+    { source:"GermanZero",target:"CO2Anstieg",   relation:"warntVor",   label:"warnt vor" },
+    { source:"DMB",       target:"KostenrisikoMieter", relation:"warntVor", label:"warnt vor" },
+    { source:"MüllerS",   target:"ChancenGrüngas",    relation:"erwartet", label:"erwartet" },
+    { source:"MüllerS",   target:"Planungssicherheit", relation:"erwartet", label:"erwartet" },
+    { source:"BIngK", target:"GModG",        relation:"kritisiert", label:"sieht erhebliche Defizite", since:"2026-05-19" },
+    { source:"BIngK", target:"EPBD",        relation:"referenziertIn", label:"referenziert in Stellungnahme", since:"2026-05-19" },
+    { source:"BIngK", target:"CO2KostAufG", relation:"referenziertIn", label:"referenziert in Stellungnahme", since:"2026-05-19" },
+    { source:"BIngK",         target:"KSG",           relation:"referenziertIn",  label:"referenziert in Stellungnahme", since:"2026-05-19" },
+    // ── Wärmeplanung / WPG ──────────────────────────────────────────────────────
+    { source:"WPG",           target:"KWPDüsseldorf",  relation:"verpflichtet",    label:"verpflichtet (§13/16)" },
+    { source:"WPGÄnderung",   target:"WPG",            relation:"ändert",          label:"ändert",                since:"2026-05-13" },
+    { source:"WPGÄnderung",   target:"KWPDüsseldorf",  relation:"verpflichtet",    label:"bestätigt Deadline 30.6.2026", since:"2026-05-13" },
+    { source:"GModG",         target:"WPG",            relation:"referenziertFür", label:"beeinflusst Umsetzung", since:"2026-05-13" },
+    { source:"GModG",         target:"KWPDüsseldorf",  relation:"birgtRisiko",     label:"birgt Risiko (65%-EE entfällt)", since:"2026-05-13" },
+    { source:"Düsseldorf",    target:"KWPDüsseldorf",  relation:"koordiniert",     label:"koordiniert" },
+    { source:"Düsseldorf",    target:"GModG",           relation:"warntVor",        label:"warnt vor Auswirkungen auf KWP", since:"2026-05-18" },
+    { source:"Düsseldorf",    target:"WPG",             relation:"referenziertIn",  label:"setzt um (§13/16)", since:"2025-12-19" },
+    // ── Verbands-Forderungen zu spezifischen Maßnahmen ───────────────────
+    { source:"BDEW",    target:"BioTreppe",   relation:"fordertNachbesserung", label:"fordert Nachbesserung" },
+    { source:"Agora",   target:"BioTreppe",   relation:"lehntAb",              label:"lehnt ab (ungeeignet)" },
+    { source:"SEFE",    target:"BioTreppe",   relation:"befürwortet",          label:"befürwortet" },
+    { source:"DMB",     target:"Mieterschutz",relation:"fordertVerstärkung",   label:"fordert Verstärkung" },
+    // ── Kommunale Klimaprogramme ──────────────────────────────────────────────
+    { source:"Stuttgart",        target:"SolaroffenseSTG",     relation:"koordiniert",     label:"koordiniert" },
+    { source:"SolaroffenseSTG",  target:"HHKlima100STG",       relation:"bezweckt",        label:"bezweckt" },
+    { source:"GModG",            target:"SolaroffenseSTG",     relation:"birgtRisiko",     label:"birgt Risiko (Investitionsunsicherheit)", since:"2026-05-13" },
+    { source:"Düsseldorf",       target:"KWKlimafreundlich",   relation:"koordiniert",     label:"koordiniert (Neustart 1.10.2026)" },
+    { source:"KWKlimafreundlich",target:"HHKlima60DUS",        relation:"bezweckt",        label:"bezweckt" },
+    { source:"GModG",            target:"KWKlimafreundlich",   relation:"birgtRisiko",     label:"birgt Risiko (65%-EE entfällt)", since:"2026-05-13" },
+    { source:"KWPDüsseldorf",    target:"KWKlimafreundlich",   relation:"referenziertFür", label:"referenziert (Maßnahmenbündel f)" },
+    { source:"LKLudwigsburg",    target:"KlimaBonus_LB",       relation:"koordiniert",     label:"koordiniert (eingefroren)" },
+    { source:"KreisMettmann",    target:"SolaroffenseMettmann",relation:"koordiniert",     label:"koordiniert" },
+    { source:"RheinKreisNeuss",  target:"SolarBonusNeuss",     relation:"koordiniert",     label:"koordiniert" }
+  ]
+};
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'PT Sans', ui-sans-serif, system-ui, sans-serif; background: #0f1117; color: #e8e8e8; overflow: hidden; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #1c3050; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  #app { display: flex; height: 100vh; }
+
+  /* ── Sidebar — PolicyLead Design System ──────────── */
+  #sidebar {
+    width: 280px; min-width: 220px; background: #0e1c38;
+    border-right: 1px solid #1c3050; display: flex; flex-direction: column;
+    z-index: 10; overflow: hidden;
+  }
+
+  /* Header / Logo */
+  #sidebar-header {
+    padding: 14px 16px 12px; border-bottom: 1px solid #1c3050;
+    background: #0e1c38;
+  }
+  #pl-logo {
+    display: flex; align-items: baseline; gap: 0; line-height: 1;
+    font-family: 'PT Sans', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.5px;
+  }
+  #pl-logo .policy { color: #00a4b3; }
+  #pl-logo .lead   { color: #ffffff; }
+  #sidebar-header .subtitle {
+    font-size: 10px; color: #7b8da3; margin-top: 6px; font-weight: 400;
+  }
+
+  /* View Tabs */
+  #view-tabs { display:flex; gap:0; padding:0; border-bottom:1px solid #1c3050; }
+  .view-tab {
+    flex:1; padding:8px 0; font-size:11px; font-weight:700; text-align:center;
+    cursor:pointer; transition:all 150ms ease; color:#7b8da3;
+    border-bottom: 2px solid transparent;
+  }
+  .view-tab.active { color:#ffffff; border-bottom-color:#ffffff; background: rgba(255,255,255,0.07); }
+  .view-tab:hover:not(.active) { color:#e2e8f0; background: rgba(255,255,255,0.04); }
+
+  /* Search */
+  #search-wrap { padding: 10px 12px; border-bottom: 1px solid #1c3050; }
+  #search {
+    width: 100%; padding: 7px 10px; background: #0b1529; border: 1px solid #1c3050;
+    border-radius: 7px; color: #e2e8f0; font-size: 12px;
+    font-family: 'PT Sans', sans-serif;
+  }
+  #search::placeholder { color: #7b8da3; }
+  #search:focus { outline: none; border-color: #00a4b3; }
+
+  /* Legend / Class filter */
+  #legend { padding: 10px 12px; overflow-y: auto; flex: 1; }
+  #legend-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  #legend h3 {
+    font-size: 10px; color: #7b8da3; text-transform: uppercase;
+    letter-spacing: 0.12em; font-weight: 700; margin-bottom: 0;
+  }
+  #legend-quick { display: flex; gap: 4px; }
+  #legend-quick span {
+    font-size: 10px; font-weight: 700; color: #00a4b3; cursor: pointer;
+    padding: 2px 7px; border: 1px solid #1c3050; border-radius: 5px; transition: all 150ms ease;
+  }
+  #legend-quick span:hover { background: rgba(0,164,179,0.12); color: #00c4d5; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; padding: 4px 6px;
+    border-radius: 5px; cursor: pointer; margin-bottom: 2px; transition: background 150ms ease;
+  }
+  .legend-item:hover { background: rgba(0,164,179,0.1); }
+  .legend-item.inactive { opacity: 0.3; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { font-size: 11px; color: #e2e8f0; }
+  .legend-count { margin-left: auto; font-size: 10px; color: #7b8da3; }
+
+  /* Controls / Layout */
+  #controls { padding: 10px 12px; border-top: 1px solid #1c3050; }
+  #controls h3 {
+    font-size: 10px; color: #7b8da3; text-transform: uppercase;
+    letter-spacing: 0.12em; font-weight: 700; margin-bottom: 8px;
+  }
+  .ctrl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .ctrl-row label { font-size: 11px; color: #7b8da3; width: 80px; }
+  .ctrl-row input[type=range] { flex: 1; accent-color: #00a4b3; }
+  .btn-row { display: flex; gap: 6px; margin-top: 10px; }
+  button {
+    flex: 1; padding: 7px 0; border: none; background: #1c3050;
+    color: #e2e8f0; border-radius: 5px; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: all 150ms ease;
+    font-family: 'PT Sans', sans-serif;
+  }
+  button:hover { background: #253f6a; color: #fff; }
+  #btn-dl {
+    background: #00a4b3; color: #fff;
+  }
+  #btn-dl:hover { background: #0090a0; }
+  button.active-toggle {
+    background: #00a4b3; color: #fff; border-color: #00a4b3;
+  }
+  button.active-toggle:hover { background: #0090a0; }
+
+  /* ── Graph canvas ────────────────────────────────── */
+  #graph-wrap { flex: 1; position: relative; overflow: hidden; }
+  #canvas { width: 100%; height: 100%; }
+
+  /* ── Detail panel ────────────────────────────────── */
+  #detail {
+    position: absolute; top: 12px; right: 12px; width: 300px;
+    background: #1a1d27; border: 1px solid #2a2d3e; border-radius: 10px;
+    padding: 16px; font-size: 12px; display: none; max-height: calc(100vh - 24px);
+    overflow-y: auto; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #detail.show { display: block; }
+  #detail-close { float: right; cursor: pointer; color: #666; font-size: 16px; line-height: 1; }
+  #detail-close:hover { color: #fff; }
+  #detail-type { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  #detail-label { font-size: 16px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+  #detail-full  { font-size: 11px; color: #aaa; margin-bottom: 10px; }
+  #detail-desc  { font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 10px; padding: 10px;
+                  background: #0f1117; border-radius: 6px; }
+  #detail-props { }
+  .prop-row { display: flex; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+  .prop-key  { color: #888; width: 90px; flex-shrink: 0; }
+  .prop-val  { color: #e8e8e8; }
+  #detail-links h4 { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 6px; }
+  .link-item { font-size: 11px; padding: 4px 0; border-bottom: 1px solid #2a2d3e; display: flex; gap: 6px; align-items: flex-start; }
+  .link-dir  { color: #5c8fff; flex-shrink: 0; width: 16px; }
+  .link-rel  { color: #888; font-style: italic; }
+  .link-target { color: #ccc; }
+
+  /* ── External link badges ────────────────────────────── */
+  #detail-external { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ext-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 9px; border-radius: 12px; font-size: 10px; font-weight: 600;
+    text-decoration: none; border: 1px solid; cursor: pointer;
+    transition: opacity 0.15s; white-space: nowrap;
+  }
+  .ext-badge:hover { opacity: 0.75; }
+  .badge-wd  { background: #0d47a122; color: #64b5f6; border-color: #1565c0; }
+  .badge-wp  { background: #1b5e2022; color: #81c784; border-color: #2e7d32; }
+  .badge-unverified { opacity: 0.5; border-style: dashed; }
+  .badge-unverified::after { content: " (unverifiziert)"; font-weight: 400; }
+
+  /* ── Tooltip ─────────────────────────────────────── */
+  #tooltip {
+    position: absolute; pointer-events: none; background: #1a1d27cc;
+    border: 1px solid #3a3d50; border-radius: 6px; padding: 8px 10px;
+    font-size: 11px; max-width: 220px; z-index: 30; display: none;
+    backdrop-filter: blur(4px);
+  }
+  #tooltip strong { font-size: 12px; display: block; margin-bottom: 2px; }
+
+  /* ── Timeline ────────────────────────────────────── */
+  #timeline {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 6;
+    padding: 6px 20px 10px;
+    background: linear-gradient(to top, #0a0d14ee 60%, transparent);
+  }
+  #tl-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  #tl-date-label { font-size: 12px; font-weight: 700; color: #90caf9; min-width: 90px; }
+  #tl-mode-btns { display: flex; gap: 4px; }
+  .tl-btn { font-size: 9px; padding: 2px 7px; border-radius: 8px; border: 1px solid #3a3d50;
+             background: #1a1d27; color: #888; cursor: pointer; transition: all 0.15s; }
+  .tl-btn.active { background: #1a237e; color: #90caf9; border-color: #3949ab; }
+  #tl-legend { margin-left: auto; display: flex; gap: 10px; font-size: 9px; color: #555; align-items:center; }
+  .tl-leg-item { display: flex; align-items: center; gap: 4px; }
+  .tl-leg-swatch { width: 12px; height: 3px; border-radius: 1px; display:inline-block; }
+  #tl-wrap { position: relative; }
+  #tl-slider { width: 100%; -webkit-appearance: none; appearance: none;
+               height: 3px; background: #2a2d3e; border-radius: 2px; outline: none; cursor: pointer; }
+  #tl-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: #5c8fff; border: 2px solid #1a1d27; cursor: grab; }
+  #tl-slider:active::-webkit-slider-thumb { cursor: grabbing; }
+  #tl-marks { position: relative; height: 22px; margin-top: 2px; pointer-events: none; }
+  .tl-mark { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .tl-mark-tick { width: 1px; height: 5px; background: rgba(255,255,255,0.25); }
+  .tl-mark-label { font-size: 8px; color: rgba(255,255,255,0.55); white-space: nowrap; }
+  .tl-mark.key .tl-mark-tick { background: rgba(255,255,255,0.6); height: 7px; }
+  .tl-mark.key .tl-mark-label { color: #fff; font-weight: 700; }
+
+  /* ── Stats bar ───────────────────────────────────── */
+  #stats {
+    position: absolute; bottom: 80px; left: 12px; font-size: 10px; color: #555;
+    background: #1a1d2799; padding: 5px 10px; border-radius: 5px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Edge label on hover ─────────────────────────── */
+  .edge-label { pointer-events: none; fill: #888; font-size: 9px; }
+
+  /* ── GraphRAG Analyse Panel ───────────────────────── */
+  #analyse-wrap { flex:1; display:none; flex-direction:column; overflow:hidden; }
+  #analyse-wrap.show { display:flex; }
+
+  #rag-questions { padding:10px 12px; border-bottom:1px solid #1c3050; }
+  #rag-questions .rag-section-hdr {
+    font-size:10px; color:#7b8da3; text-transform:uppercase;
+    letter-spacing:0.12em; font-weight:700; margin-bottom:8px;
+  }
+  .rag-q-card {
+    background:#0b1529; border:1px solid #1c3050; border-radius:7px;
+    padding:8px 10px; margin-bottom:6px; cursor:pointer; transition:all 150ms;
+    font-size:11px; color:#c8d6e8; line-height:1.4;
+  }
+  .rag-q-card:hover { border-color:#00a4b3; background:#0d1e3c; color:#fff; }
+  .rag-q-card.rag-active { border-color:#00a4b3; background:#00a4b318; color:#fff; }
+  .rag-q-tag {
+    font-size:9px; color:#f5c03d; text-transform:uppercase;
+    letter-spacing:0.1em; margin-bottom:3px; font-weight:700;
+  }
+
+  #rag-custom-wrap { padding:8px 12px 10px; border-bottom:1px solid #1c3050; }
+  #rag-custom-wrap .rag-section-hdr {
+    font-size:10px; color:#7b8da3; text-transform:uppercase;
+    letter-spacing:0.12em; font-weight:700; margin-bottom:6px;
+  }
+  #rag-input {
+    width:100%; padding:7px 10px; background:#0b1529; border:1px solid #1c3050;
+    border-radius:7px; color:#e2e8f0; font-size:11px;
+    font-family:'PT Sans',sans-serif; resize:none; height:48px;
+  }
+  #rag-input::placeholder { color:#7b8da3; }
+  #rag-input:focus { outline:none; border-color:#00a4b3; }
+  #rag-btn-row { display:flex; gap:6px; margin-top:6px; }
+  #rag-run {
+    flex:1; background:#00a4b3; color:#fff; border:none; border-radius:7px;
+    padding:7px; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:'PT Sans',sans-serif; transition:background 150ms;
+  }
+  #rag-run:hover { background:#0090a0; }
+  #rag-clear-btn {
+    background:#1c3050; color:#7b8da3; border:none; border-radius:7px;
+    padding:7px 10px; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:'PT Sans',sans-serif; transition:all 150ms; display:none;
+  }
+  #rag-clear-btn.show { display:block; }
+  #rag-clear-btn:hover { background:#253f6a; color:#fff; }
+
+  #rag-result {
+    flex:1; overflow-y:auto; padding:10px 12px;
+    display:none; flex-direction:column; gap:0;
+  }
+  #rag-result.show { display:flex; }
+
+  .rag-stats-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px; }
+  .rag-stat-chip {
+    font-size:10px; padding:2px 9px; border-radius:10px; font-weight:700;
+    background:#00a4b320; color:#00c4d5; border:1px solid #00a4b345;
+  }
+
+  .rag-block-title {
+    font-size:9px; color:#7b8da3; text-transform:uppercase;
+    letter-spacing:0.12em; font-weight:700; margin:10px 0 5px;
+  }
+
+  .rag-path-chain {
+    background:#060d1a; border-left:2px solid #00a4b3;
+    border-radius:0 6px 6px 0; padding:6px 8px; margin-bottom:4px;
+    font-size:10px; color:#c8d6e8; font-family:monospace; line-height:1.6;
+  }
+  .pn { color:#90caf9; } /* path node */
+  .pr { color:#f5c03d; font-style:italic; } /* path relation */
+  .pt { color:#ef9a9a; font-size:9px; } /* path type tag */
+
+  .rag-node-row {
+    display:flex; align-items:center; gap:7px; padding:4px 0;
+    border-bottom:1px solid #1c305044; font-size:11px;
+  }
+  .rag-node-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .rag-node-lbl { color:#e2e8f0; flex:1; line-height:1.2; }
+  .rag-node-type { color:#7b8da3; font-size:9px; }
+  .rag-seed-badge {
+    font-size:9px; padding:1px 5px; border-radius:8px;
+    background:#00a4b330; color:#00c4d5; border:1px solid #00a4b355;
+    flex-shrink:0;
+  }
+
+  .rag-answer-box {
+    background:#060d1a; border:1px solid #1c3050; border-radius:8px;
+    padding:12px; margin-top:8px; font-size:11px; color:#c8d6e8;
+    line-height:1.65;
+  }
+  .rag-answer-box .ra-label {
+    font-size:9px; color:#f5c03d; text-transform:uppercase;
+    letter-spacing:0.1em; font-weight:700; margin-bottom:8px; display:block;
+  }
+  .rag-answer-box strong { color:#fff; }
+  .rag-answer-box em { color:#f5c03d; font-style:normal; font-weight:700; }
+  .rag-answer-box .ra-cite { color:#00a4b3; font-size:10px; }
+  .rag-answer-box .ra-gap {
+    margin-top:8px; padding:6px 8px; border-radius:5px;
+    background:#1c305055; font-size:10px; color:#7b8da3; border-left:2px solid #f5c03d;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #3a3d50; border-radius: 2px; }
+
+  /* ── Onto view layout ────────────────────────────────── */
+  #onto-wrap { flex:1; display:none; overflow:hidden; }
+  #onto-wrap.show { display:flex; }
+
+  #onto-tree { width:210px; min-width:180px; border-right:1px solid #2a2d3e;
+               overflow-y:auto; padding:10px 0; font-size:11px; }
+  #onto-tree h3 { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:1px;
+                  padding:0 12px 6px; }
+  .tree-item { display:flex; align-items:center; gap:6px; padding:3px 12px 3px;
+               cursor:pointer; transition:background 0.12s; white-space:nowrap; }
+  .tree-item:hover { background:#2a2d3e; }
+  .tree-item.selected { background:#1a237e33; }
+  .tree-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .tree-indent { flex-shrink:0; }
+  .tree-label { font-size:11px; color:#ccc; }
+  .tree-sub { color:#666; font-size:10px; }
+
+  #onto-graph { flex:1; position:relative; overflow:hidden; background:#0a0d14; }
+  #onto-graph svg { width:100%; height:100%; }
+
+  #onto-props { width:270px; min-width:220px; border-left:1px solid #2a2d3e;
+                overflow-y:auto; padding:10px 0; display:flex; flex-direction:column; gap:0; }
+
+  .onto-section { padding:8px 12px; border-bottom:1px solid #2a2d3e; }
+  .onto-section h3 { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+
+  /* Property filter chips */
+  #prop-filters { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+  .prop-chip { padding:2px 8px; border-radius:10px; font-size:10px; cursor:pointer;
+               border:1px solid transparent; opacity:0.5; transition:all 0.15s; }
+  .prop-chip.active { opacity:1; }
+
+  /* Properties table */
+  .prop-table { width:100%; border-collapse:collapse; font-size:10px; }
+  .prop-table tr { border-bottom:1px solid #1a1d27; }
+  .prop-table tr:hover { background:#1a1d27; }
+  .prop-table td { padding:4px 4px; vertical-align:top; }
+  .prop-id   { color:#90caf9; font-weight:600; font-size:10px; }
+  .prop-dom  { color:#aaa; }
+  .prop-arr  { color:#555; text-align:center; }
+  .prop-rng  { color:#aaa; }
+  .prop-note { color:#555; font-style:italic; font-size:9px; }
+
+  /* Disjoint axioms */
+  .disjoint-item { padding:4px 0; border-bottom:1px solid #1a1d27; font-size:10px; }
+  .disjoint-cls { color:#ef9a9a; }
+  .disjoint-sym { color:#ef5350; margin:0 4px; font-weight:700; }
+  .disjoint-note { color:#555; font-size:9px; display:block; }
+
+  /* Schema graph node styles */
+  .schema-node rect { rx:4; stroke-width:1.5; cursor:pointer; }
+  .schema-node text { pointer-events:none; font-size:10px; fill:#fff; }
+  .schema-edge { fill:none; stroke-width:1.5; }
+  .schema-edge.subClassOf { stroke:#3a3d50; stroke-dasharray:none; marker-end:url(#sc-arrow); }
+  .schema-edge.property   { stroke-dasharray:5,3; stroke-width:1.2; opacity:0.7; }
+  .schema-edge.disjoint   { stroke:#ef5350; stroke-dasharray:3,3; opacity:0.5; marker-end:url(#dj-arrow); }
+  .schema-elabel { pointer-events:none; font-size:9px; fill:#888; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Sidebar ───────────────────────────────────────────────── -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div id="pl-logo"><span class="policy">POLICY</span><span class="lead">LEAD</span></div>
+      <div class="subtitle">Knowledge Graph · GModG 2026</div>
+    </div>
+
+    <div id="view-tabs">
+      <div class="view-tab active" id="tab-data">Daten-Graph</div>
+      <div class="view-tab"        id="tab-onto">Ontologie-Schema</div>
+      <div class="view-tab"        id="tab-analyse">Analyse</div>
+    </div>
+
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="🔍 Knoten suchen …" />
+    </div>
+
+    <div id="legend">
+      <div id="legend-header">
+        <h3>Klassen</h3>
+        <div id="legend-quick">
+          <span id="btn-all">Alle</span>
+          <span id="btn-none">Keine</span>
+        </div>
+      </div>
+      <div id="legend-items"></div>
+    </div>
+
+    <div id="controls">
+      <h3>Layout</h3>
+      <div class="ctrl-row">
+        <label>Abstoßung</label>
+        <input type="range" id="charge" min="-800" max="-50" value="-280" step="10"/>
+      </div>
+      <div class="ctrl-row">
+        <label>Link-Länge</label>
+        <input type="range" id="linkDist" min="30" max="300" value="110" step="5"/>
+      </div>
+      <div class="ctrl-row">
+        <label>Kollision</label>
+        <input type="range" id="collide" min="5" max="60" value="22" step="1"/>
+      </div>
+      <div class="btn-row">
+        <button id="btn-reset">Reset Zoom</button>
+        <button id="btn-freeze">Einfrieren</button>
+        <button id="btn-dl">↓ Ontologie</button>
+      </div>
+      <div class="btn-row" style="margin-top:6px">
+        <button id="btn-cluster" style="flex:1">Klassen gruppieren</button>
+      </div>
+      <div class="ctrl-row" id="cluster-strength-row" style="display:none; margin-top:4px">
+        <label>Stärke</label>
+        <input type="range" id="clusterStrength" min="0.01" max="0.4" value="0.12" step="0.01"/>
+      </div>
+    </div>
+
+    <!-- ── GraphRAG Analyse Panel ─────────────────────── -->
+    <div id="analyse-wrap">
+
+      <div id="rag-questions">
+        <div class="rag-section-hdr">Showcase-Fragen</div>
+
+        <div class="rag-q-card" data-qid="0">
+          <div class="rag-q-tag">Gewinner &amp; Verlierer</div>
+          Welche Akteure profitieren vom GModG — und welche tragen das Risiko?
+        </div>
+
+        <div class="rag-q-card" data-qid="1">
+          <div class="rag-q-tag">Risikoanalyse</div>
+          Wie gefährdet ist die kommunale Wärmeplanung in Düsseldorf durch das GModG?
+        </div>
+
+        <div class="rag-q-card" data-qid="2">
+          <div class="rag-q-tag">PV &amp; Wärme · Marktanalyse</div>
+          Welche Auswirkung hat das GModG auf Förderungen und Maßnahmen in deutschen Ballungsgebieten?
+        </div>
+
+        <div class="rag-q-card" data-qid="3">
+          <div class="rag-q-tag">Politische Szenarien · NRW &amp; BW</div>
+          Wie werden sich SPD und CDU in den Bundesländern positionieren — und welchen Impact haben sie in NRW und Baden-Württemberg?
+        </div>
+
+        <div class="rag-q-card" data-qid="4">
+          <div class="rag-q-tag">Epistemische Analyse</div>
+          Was sagt die Wissenschaft vs. die Politik zum CO₂-Effekt des GModG?
+        </div>
+      </div>
+
+      <div id="rag-custom-wrap">
+        <div class="rag-section-hdr">Eigene Frage</div>
+        <textarea id="rag-input" placeholder="z.B. Welche Gesetze werden durch das GModG geändert?"></textarea>
+        <div id="rag-btn-row">
+          <button id="rag-run">▶ Analyse starten</button>
+          <button id="rag-clear-btn">✕ Reset</button>
+        </div>
+      </div>
+
+      <div id="rag-result">
+        <div class="rag-stats-row" id="rag-stats"></div>
+        <div class="rag-block-title">Retrievierter Subgraph · Pfadketten</div>
+        <div id="rag-paths"></div>
+        <div class="rag-block-title">Seed-Knoten (höchste Relevanz)</div>
+        <div id="rag-nodes"></div>
+        <div id="rag-answer"></div>
+      </div>
+
+    </div><!-- /analyse-wrap -->
+
+  </div><!-- /sidebar -->
+
+  <!-- ── Graph ─────────────────────────────────────────────────── -->
+  <div id="graph-wrap">
+    <svg id="canvas"></svg>
+    <div id="tooltip"></div>
+    <div id="stats"></div>
+
+    <!-- ── Timeline ──────────────────────────────────────────── -->
+    <div id="timeline">
+      <div id="tl-header">
+        <span id="tl-date-label">Mai 2026</span>
+        <div id="tl-mode-btns">
+          <div class="tl-btn active" id="tl-live">Aktuell</div>
+          <div class="tl-btn" id="tl-history">Verlauf</div>
+        </div>
+        <div id="tl-legend">
+          <span class="tl-leg-item"><span class="tl-leg-swatch" style="background:#5c8fff"></span>aktiv</span>
+          <span class="tl-leg-item"><span class="tl-leg-swatch" style="background:#888;opacity:.5"></span>noch nicht</span>
+          <span class="tl-leg-item"><span class="tl-leg-swatch" style="background:#ef5350;opacity:.6"></span>abgelaufen</span>
+          <span class="tl-leg-item"><span class="tl-leg-swatch" style="background:#ff9800;border-top:1px dashed #ff9800"></span>widersprechend</span>
+        </div>
+      </div>
+      <div id="tl-wrap">
+        <input type="range" id="tl-slider" min="0" max="100" value="55"/>
+        <div id="tl-marks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Ontologie-Schema View ────────────────────────────────── -->
+  <div id="onto-wrap">
+    <div id="onto-tree">
+      <h3>Klassenhierarchie</h3>
+      <div id="onto-tree-items"></div>
+    </div>
+    <div id="onto-graph">
+      <svg id="onto-canvas"></svg>
+    </div>
+    <div id="onto-props">
+      <div class="onto-section">
+        <h3>Properties anzeigen</h3>
+        <div id="prop-filters"></div>
+      </div>
+      <div class="onto-section" style="flex:1;overflow-y:auto">
+        <h3>Object Properties</h3>
+        <table class="prop-table" id="prop-table"></table>
+      </div>
+      <div class="onto-section">
+        <h3>Disjoint-Axiome <span style="color:#ef5350">⊥</span></h3>
+        <div id="disjoint-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Detail Panel ──────────────────────────────────────────── -->
+  <div id="detail">
+    <span id="detail-close">✕</span>
+    <div id="detail-type"></div>
+    <div id="detail-label"></div>
+    <div id="detail-full"></div>
+    <div id="detail-external"></div>
+    <div id="detail-desc"></div>
+    <div id="detail-props"></div>
+    <div id="detail-links"></div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+const ontology = window.KG_ONTOLOGY;
+const raw = window.KG_DATA;
+
+const colorMap = {};
+const labelMap = {};
+ontology.classes.forEach(c => {
+  colorMap[c.id] = c.color;
+  labelMap[c.id] = c.label;
+});
+
+function nodeColor(type) { return colorMap[type] || '#555'; }
+
+// ─── Build class counts ───────────────────────────────────────────────────────
+const classCounts = {};
+raw.nodes.forEach(n => { classCounts[n.type] = (classCounts[n.type] || 0) + 1; });
+
+// ─── Active filters ───────────────────────────────────────────────────────────
+const activeClasses = new Set(ontology.classes.map(c => c.id));
+
+// ─── Legend ───────────────────────────────────────────────────────────────────
+const legendEl = document.getElementById('legend-items');
+ontology.classes.forEach(cls => {
+  if (!classCounts[cls.id]) return;
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.dataset.cls = cls.id;
+  item.innerHTML = `
+    <div class="legend-dot" style="background:${cls.color}"></div>
+    <span class="legend-label">${cls.label}</span>
+    <span class="legend-count">${classCounts[cls.id] || 0}</span>`;
+  item.addEventListener('click', () => {
+    if (activeClasses.has(cls.id)) activeClasses.delete(cls.id);
+    else activeClasses.add(cls.id);
+    item.classList.toggle('inactive');
+    updateVisibility();
+  });
+  legendEl.appendChild(item);
+});
+
+document.getElementById('btn-all').addEventListener('click', () => {
+  ontology.classes.forEach(c => activeClasses.add(c.id));
+  legendEl.querySelectorAll('.legend-item').forEach(el => el.classList.remove('inactive'));
+  updateVisibility();
+});
+document.getElementById('btn-none').addEventListener('click', () => {
+  ontology.classes.forEach(c => activeClasses.delete(c.id));
+  legendEl.querySelectorAll('.legend-item').forEach(el => el.classList.add('inactive'));
+  updateVisibility();
+});
+
+// ─── SVG setup ────────────────────────────────────────────────────────────────
+const svg = d3.select('#canvas');
+let width  = svg.node().clientWidth  || (window.innerWidth - 280);
+let height = svg.node().clientHeight || window.innerHeight;
+
+const defs = svg.append('defs');
+// Arrow markers per relation type
+const markers = ['default','löstAb','führtZu','lehntAb','unterstützt','enthältMaßnahme'];
+markers.forEach(m => {
+  const col = m === 'lehntAb' ? '#ef5350'
+            : m === 'unterstützt' ? '#66bb6a'
+            : m === 'enthältMaßnahme' ? '#ffa726'
+            : '#555';
+  defs.append('marker')
+    .attr('id', 'arrow-' + m)
+    .attr('viewBox','0 -4 8 8').attr('refX', 18).attr('refY', 0)
+    .attr('markerWidth', 6).attr('markerHeight', 6).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill', col).attr('opacity', 0.7);
+});
+
+const g = svg.append('g');
+
+svg.call(d3.zoom().scaleExtent([0.1, 4]).on('zoom', e => g.attr('transform', e.transform)));
+
+// ─── Force simulation ─────────────────────────────────────────────────────────
+let frozen = false;
+const getCharge  = () => +document.getElementById('charge').value;
+const getLinkDist = () => +document.getElementById('linkDist').value;
+const getCollide  = () => +document.getElementById('collide').value;
+
+// Deep-copy nodes/links for d3 mutation
+const nodes = raw.nodes.map((d, i) => ({
+  ...d,
+  // Explicit jitter prevents D3's phyllotaxis-spiral ring artifact
+  x: width  / 2 + (Math.random() - 0.5) * width  * 0.6,
+  y: height / 2 + (Math.random() - 0.5) * height * 0.6
+}));
+
+// Build demoLink BEFORE simulation so D3 can index it correctly
+const _roloff       = nodes.find(n => n.id === "Roloff");
+const _mieterschutz = nodes.find(n => n.id === "Mieterschutz");
+const links = raw.links.map(d => ({ ...d }));
+if (_roloff && _mieterschutz) {
+  links.push({
+    source: _roloff, target: _mieterschutz,
+    relation: "fordertNachbesserung",
+    label: "fordert Nachbesserung (nach BT-Debatte)",
+    since: "2026-10-15",
+    conflictsWith: "Roloff→GModG→befürwortet",
+    isDemo: true
+  });
+}
+
+const simulation = d3.forceSimulation(nodes)
+  .force('link',    d3.forceLink(links).id(d => d.id).distance(getLinkDist))
+  .force('charge',  d3.forceManyBody().strength(getCharge))
+  .force('center',  d3.forceCenter(width / 2, height / 2))
+  .force('collide', d3.forceCollide(getCollide));
+
+['charge','linkDist','collide'].forEach(id => {
+  document.getElementById(id).addEventListener('input', restartSim);
+});
+function restartSim() {
+  simulation
+    .force('link').distance(getLinkDist());
+  simulation
+    .force('charge').strength(getCharge());
+  simulation
+    .force('collide').radius(getCollide());
+  if (!frozen) simulation.alpha(0.4).restart();
+}
+
+// ─── Draw links ───────────────────────────────────────────────────────────────
+function markerFor(rel) {
+  if (rel === 'löstAb') return 'arrow-löstAb';
+  if (rel === 'führtZu') return 'arrow-führtZu';
+  if (rel === 'lehntAb') return 'arrow-lehntAb';
+  if (['unterstützt','konstruktiv'].includes(rel)) return 'arrow-unterstützt';
+  if (rel === 'enthältMaßnahme') return 'arrow-enthältMaßnahme';
+  return 'arrow-default';
+}
+function linkColor(rel) {
+  if (['lehntAb','kritisiert'].includes(rel))                                    return '#ef535066';
+  if (['befürwortet','unterstützt','begrüßt'].includes(rel))                     return '#66bb6a55';
+  if (rel === 'löstAb')                                                          return '#ff980088';
+  if (['schafftAb','ermächtigt','verpflichtet','verankert'].includes(rel)) return '#ffa72666';
+  if (rel === 'bezweckt')                                                        return '#26a69a55';
+  if (rel === 'warntVor')                                                        return '#ef535044';
+  if (rel === 'birgtRisiko')                                                     return '#ef535033';
+  if (rel === 'prognostiziert')                                                  return '#ef535055';
+  if (rel === 'erwartet')                                                        return '#26a69a44';
+  if (rel === 'behauptet')                                                       return '#ffa72633';
+  if (rel === 'bewirkt')                                                         return '#b71c1c88';
+  if (rel === 'begrenzt')                                                        return '#26a69a44';
+  if (rel === 'ändert')                                                          return '#5c8fff44';
+  if (rel === 'referenziertIn')                                                  return '#5c8fff33';
+  if (rel === 'koordiniert')                                                     return '#2E7D3266';
+  return '#3a3d5077';
+}
+
+const linkGroup = g.append('g').attr('class','links');
+const linkSel = linkGroup.selectAll('line').data(links).join('line')
+  .attr('stroke', d => linkColor(d.relation))
+  .attr('stroke-width', d => d.relation === 'ändert' || d.relation === 'löstAb' ? 2 : 1)
+  .attr('marker-end', d => `url(#${markerFor(d.relation)})`);
+
+// Edge label (hidden by default, shown on hover via tooltip)
+const linkLabelGroup = g.append('g').attr('class','edge-labels');
+
+// ─── Draw nodes ───────────────────────────────────────────────────────────────
+function nodeRadius(d) {
+  const deg = links.filter(l =>
+    (l.source.id||l.source) === d.id || (l.target.id||l.target) === d.id
+  ).length;
+  if (d.id === 'GModG') return 22;
+  return Math.max(9, Math.min(18, 7 + deg * 1.4));
+}
+
+const tooltip = document.getElementById('tooltip');
+
+const nodeGroup = g.append('g').attr('class','nodes');
+const nodeSel = nodeGroup.selectAll('g.node').data(nodes).join('g')
+  .attr('class','node')
+  .attr('cursor','pointer')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!frozen) { simulation.alphaTarget(0.3).restart(); } d.fx = d.x; d.fy = d.y; })
+    .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end',   (e, d) => { if (!frozen) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+  )
+  .on('mouseover', (e, d) => {
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = `<strong>${d.fullLabel || d.label}</strong>${d.desc ? '<br/>' + d.desc.slice(0,80) + (d.desc.length > 80 ? '…' : '') : ''}`;
+    highlightNeighbors(d);
+  })
+  .on('mousemove', (e) => {
+    const rect = document.getElementById('graph-wrap').getBoundingClientRect();
+    tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+    tooltip.style.top  = (e.clientY - rect.top  + 12) + 'px';
+  })
+  .on('mouseout', () => { tooltip.style.display = 'none'; resetHighlight(); })
+  .on('click', (e, d) => { e.stopPropagation(); showDetail(d); });
+
+nodeSel.append('circle')
+  .attr('r', nodeRadius)
+  .attr('fill', d => nodeColor(d.type))
+  .attr('stroke', '#0f1117').attr('stroke-width', 1.5);
+
+nodeSel.append('text')
+  .attr('text-anchor','middle').attr('dominant-baseline','middle')
+  .attr('fill','#fff').attr('font-size', d => d.id === 'GModG' ? 11 : 9)
+  .attr('font-weight', d => d.id === 'GModG' ? 700 : 400)
+  .attr('pointer-events','none')
+  .each(function(d) {
+    const el = d3.select(this);
+    const lines = d.label.split('\n');
+    if (lines.length === 1) {
+      el.text(d.label);
+    } else {
+      lines.forEach((line, i) => {
+        el.append('tspan')
+          .attr('x', 0).attr('dy', i === 0 ? -(lines.length - 1) * 5 + 'px' : '10px')
+          .text(line);
+      });
+    }
+  });
+
+// ─── Tick ─────────────────────────────────────────────────────────────────────
+simulation.on('tick', () => {
+  linkSel
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+document.getElementById('stats').textContent =
+  `${nodes.length} Knoten · ${links.length} Kanten · OWL-Klassen: ${ontology.classes.length}`;
+
+// ─── Highlight ────────────────────────────────────────────────────────────────
+function highlightNeighbors(d) {
+  const connected = new Set([d.id]);
+  links.forEach(l => {
+    if ((l.source.id||l.source) === d.id) connected.add(l.target.id||l.target);
+    if ((l.target.id||l.target) === d.id) connected.add(l.source.id||l.source);
+  });
+  nodeSel.attr('opacity', n => connected.has(n.id) ? 1 : 0.15);
+  linkSel.attr('opacity', l =>
+    (l.source.id||l.source) === d.id || (l.target.id||l.target) === d.id ? 1 : 0.05
+  );
+}
+function resetHighlight() {
+  if (window._ragActive) return; // don't wipe RAG highlight on node mouseout
+  nodeSel.attr('opacity', 1);
+  linkSel.attr('opacity', 1);
+  linkSel.attr('stroke-width', 1);
+}
+
+// ─── Visibility filter ────────────────────────────────────────────────────────
+function updateVisibility() {
+  nodeSel.attr('display', d => activeClasses.has(d.type) ? null : 'none');
+  linkSel.attr('display', l => {
+    const s = l.source.id || l.source;
+    const t = l.target.id || l.target;
+    const sn = nodes.find(n => n.id === s);
+    const tn = nodes.find(n => n.id === t);
+    if (!sn || !tn) return 'none';
+    return activeClasses.has(sn.type) && activeClasses.has(tn.type) ? null : 'none';
+  });
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  if (!q) { resetHighlight(); return; }
+  const matches = new Set(nodes.filter(n =>
+    (n.label + (n.fullLabel||'')).toLowerCase().includes(q)
+  ).map(n => n.id));
+  nodeSel.attr('opacity', n => matches.has(n.id) ? 1 : 0.1);
+  linkSel.attr('opacity', 0.05);
+});
+
+// ─── Detail panel ─────────────────────────────────────────────────────────────
+function showDetail(d) {
+  const panel = document.getElementById('detail');
+  const cls = ontology.classes.find(c => c.id === d.type) || {};
+  document.getElementById('detail-type').textContent = cls.label || d.type;
+  document.getElementById('detail-type').style.color = nodeColor(d.type);
+  document.getElementById('detail-label').textContent = d.label.replace(/\n/g,' ');
+  document.getElementById('detail-full').textContent = d.fullLabel || '';
+
+  // External links (Wikidata + Wikipedia)
+  const extEl = document.getElementById('detail-external');
+  extEl.innerHTML = '';
+  if (d.wikidataId) {
+    const wdBadge = document.createElement('a');
+    wdBadge.className = 'ext-badge badge-wd' + (d.wikidataUnverified ? ' badge-unverified' : '');
+    wdBadge.href = `https://www.wikidata.org/wiki/${d.wikidataId}`;
+    wdBadge.target = '_blank';
+    wdBadge.rel = 'noopener noreferrer';
+    wdBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h4v18H3V3zm6 0h2v18H9V3zm4 0h2l4 9-4 9h-2l4-9-4-9z"/></svg> Wikidata · ${d.wikidataId}`;
+    extEl.appendChild(wdBadge);
+
+    const wpBadge = document.createElement('a');
+    const wpSlug = d.wikipedia || '';
+    wpBadge.className = 'ext-badge badge-wp' + (d.wikidataUnverified ? ' badge-unverified' : '');
+    wpBadge.href = `https://de.wikipedia.org/wiki/${wpSlug}`;
+    wpBadge.target = '_blank';
+    wpBadge.rel = 'noopener noreferrer';
+    wpBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg> Wikipedia (DE)`;
+    if (wpSlug) extEl.appendChild(wpBadge);
+
+    // owl:sameAs triple display
+    const tripleDiv = document.createElement('div');
+    tripleDiv.style.cssText = 'width:100%;margin-top:4px;font-size:9px;color:#444;font-family:monospace;';
+    tripleDiv.textContent = `owl:sameAs wd:${d.wikidataId}`;
+    extEl.appendChild(tripleDiv);
+  }
+
+  document.getElementById('detail-desc').textContent = d.desc || '';
+  document.getElementById('detail-desc').style.display = d.desc ? 'block' : 'none';
+
+  // Properties
+  const props = [];
+  if (d.status)  props.push(['Status',   d.status]);
+  if (d.date)    props.push(['Datum',    d.date]);
+  if (d.tendenz) props.push(['Tendenz',  d.tendenz]);
+  if (d.party)   props.push(['Partei',   d.party]);
+  if (d.role)    props.push(['Rolle',    d.role]);
+  document.getElementById('detail-props').innerHTML = props.map(([k,v]) =>
+    `<div class="prop-row"><span class="prop-key">${k}</span><span class="prop-val">${v}</span></div>`
+  ).join('');
+
+  // Connected links
+  const outLinks = links.filter(l => (l.source.id||l.source) === d.id);
+  const inLinks  = links.filter(l => (l.target.id||l.target) === d.id);
+  let html = '';
+  if (outLinks.length) {
+    html += '<h4>→ Ausgehende Relationen</h4>';
+    html += outLinks.map(l => {
+      const tn = nodes.find(n => n.id === (l.target.id||l.target));
+      const since = l.since ? `<span style="color:#555;margin-left:6px;font-size:10px">ab ${l.since}</span>` : '';
+      return `<div class="link-item"><span class="link-dir">→</span><span class="link-rel">${l.label}</span>${since}<span class="link-target" style="margin-left:auto">${tn ? (tn.fullLabel||tn.label).replace(/\n/g,' ') : l.target}</span></div>`;
+    }).join('');
+  }
+  if (inLinks.length) {
+    html += '<h4>← Eingehende Relationen</h4>';
+    html += inLinks.map(l => {
+      const sn = nodes.find(n => n.id === (l.source.id||l.source));
+      const since = l.since ? `<span style="color:#555;margin-left:6px;font-size:10px">ab ${l.since}</span>` : '';
+      return `<div class="link-item"><span class="link-dir">←</span><span class="link-rel">${l.label}</span>${since}<span class="link-target" style="margin-left:auto">${sn ? (sn.fullLabel||sn.label).replace(/\n/g,' ') : l.source}</span></div>`;
+    }).join('');
+  }
+  document.getElementById('detail-links').innerHTML = html;
+  panel.classList.add('show');
+}
+document.getElementById('detail-close').addEventListener('click', () =>
+  document.getElementById('detail').classList.remove('show'));
+document.getElementById('canvas').addEventListener('click', () =>
+  document.getElementById('detail').classList.remove('show'));
+
+// ─── Controls ─────────────────────────────────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  svg.transition().duration(600).call(
+    d3.zoom().transform, d3.zoomIdentity.translate(0,0).scale(1)
+  );
+});
+
+document.getElementById('btn-freeze').addEventListener('click', function() {
+  frozen = !frozen;
+  this.textContent = frozen ? '▶ Fortsetzen' : 'Einfrieren';
+  if (!frozen) simulation.alpha(0.3).restart();
+  else simulation.stop();
+});
+
+// ─── Cluster force ────────────────────────────────────────────────────────────
+let clusterActive = false;
+
+function makeClusterForce(strength) {
+  let _nodes;
+  function force(alpha) {
+    const centroids = {}, counts = {};
+    _nodes.forEach(d => {
+      if (!centroids[d.type]) { centroids[d.type] = { x: 0, y: 0 }; counts[d.type] = 0; }
+      centroids[d.type].x += d.x;
+      centroids[d.type].y += d.y;
+      counts[d.type]++;
+    });
+    Object.keys(centroids).forEach(t => {
+      centroids[t].x /= counts[t];
+      centroids[t].y /= counts[t];
+    });
+    _nodes.forEach(d => {
+      const c = centroids[d.type];
+      if (!c) return;
+      d.vx += (c.x - d.x) * strength * alpha;
+      d.vy += (c.y - d.y) * strength * alpha;
+    });
+  }
+  force.initialize = n => { _nodes = n; };
+  return force;
+}
+
+const btnCluster = document.getElementById('btn-cluster');
+const clusterStrengthRow = document.getElementById('cluster-strength-row');
+const clusterStrengthInput = document.getElementById('clusterStrength');
+
+btnCluster.addEventListener('click', function() {
+  clusterActive = !clusterActive;
+  this.classList.toggle('active-toggle', clusterActive);
+  clusterStrengthRow.style.display = clusterActive ? 'flex' : 'none';
+  if (clusterActive) {
+    simulation.force('cluster', makeClusterForce(+clusterStrengthInput.value));
+  } else {
+    simulation.force('cluster', null);
+  }
+  simulation.alpha(0.4).restart();
+});
+
+clusterStrengthInput.addEventListener('input', () => {
+  if (clusterActive) {
+    simulation.force('cluster', makeClusterForce(+clusterStrengthInput.value));
+    simulation.alpha(0.3).restart();
+  }
+});
+
+document.getElementById('btn-dl').addEventListener('click', () => {
+  const ttl = `@prefix pol:  <https://policy-kg.org/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix wd:   <https://www.wikidata.org/entity/> .
+
+pol:PolicyKGOntology a owl:Ontology ;
+    rdfs:label "Policy Knowledge Graph Ontologie — GModG 2026"@de .
+
+# ── Klassen ────────────────────────────────────────────────
+pol:RechtlichesInstrument a owl:Class ; rdfs:label "Rechtliches Instrument"@de .
+pol:Bundesgesetz    rdfs:subClassOf pol:RechtlichesInstrument ; a owl:Class .
+pol:EURechtakt      rdfs:subClassOf pol:RechtlichesInstrument ; a owl:Class .
+pol:Gesetzgebungsverfahren a owl:Class ; rdfs:label "Gesetzgebungsverfahren"@de .
+pol:Evaluierung     rdfs:subClassOf pol:Gesetzgebungsverfahren ; a owl:Class .
+pol:PolitischeAbsicht a owl:Class .
+pol:PolitischeMaßnahme a owl:Class .
+pol:Maßnahmenpaket  rdfs:subClassOf pol:PolitischeMaßnahme ; a owl:Class .
+pol:Akteur a owl:Class .
+pol:Person          rdfs:subClassOf pol:Akteur ; a owl:Class .
+pol:Organisation    rdfs:subClassOf pol:Akteur ; a owl:Class .
+pol:Ministerium     rdfs:subClassOf pol:Organisation ; a owl:Class .
+pol:Partei          rdfs:subClassOf pol:Organisation ; a owl:Class .
+pol:Verband         rdfs:subClassOf pol:Organisation ; a owl:Class .
+pol:Denkfabrik      rdfs:subClassOf pol:Organisation ; a owl:Class .
+pol:NGO             rdfs:subClassOf pol:Verband ; a owl:Class . # subsumiert unter Verband
+pol:WirtschaftlicheFolge a owl:Class .
+
+# ── Object Properties ──────────────────────────────────────
+pol:löstAb          a owl:ObjectProperty ; rdfs:domain pol:Bundesgesetz    ; rdfs:range pol:Bundesgesetz .
+pol:ändert          a owl:ObjectProperty ; rdfs:domain pol:Bundesgesetz    ; rdfs:range pol:RechtlichesInstrument .
+pol:setztUm         a owl:ObjectProperty ; rdfs:domain pol:Bundesgesetz    ; rdfs:range pol:EURechtakt .
+pol:referenziertFür a owl:ObjectProperty ; rdfs:domain pol:RechtlichesInstrument ; rdfs:range pol:RechtlichesInstrument .
+pol:verabschiedet   a owl:ObjectProperty ; rdfs:domain pol:Gesetzgebungsverfahren ; rdfs:range pol:RechtlichesInstrument .
+pol:hatFederführung a owl:ObjectProperty ; rdfs:domain pol:Gesetzgebungsverfahren ; rdfs:range pol:Ministerium .
+pol:begründet       a owl:ObjectProperty ; rdfs:domain pol:PolitischeAbsicht ; rdfs:range pol:RechtlichesInstrument .
+pol:schafftAb       a owl:ObjectProperty ; rdfs:subPropertyOf pol:ändert .
+pol:verpflichtet    a owl:ObjectProperty ; rdfs:domain pol:RechtlichesInstrument ; rdfs:range pol:PolitischeMaßnahme ;
+    rdfs:comment "Ordnungsrechtliches Gebot; Adressat: private Rechtssubjekte (Eigentümer, Anlagenbetreiber)"@de .
+pol:verankert       a owl:ObjectProperty ; rdfs:domain pol:RechtlichesInstrument ; rdfs:range pol:PolitischeMaßnahme ;
+    rdfs:comment "Schafft eine gesetzlich geschützte Rechtsposition (z.B. Mieterschutzanspruch)"@de .
+pol:ermächtigt      a owl:ObjectProperty ; rdfs:domain pol:RechtlichesInstrument ; rdfs:range pol:PolitischeMaßnahme ;
+    rdfs:comment "Ermächtigungsgrundlage; Adressat: staatliche Organe, Behörden, Verordnungsgeber"@de .
+pol:leitet          a owl:ObjectProperty ; rdfs:domain pol:Person ; rdfs:range pol:Organisation .
+pol:gehörtZu        a owl:ObjectProperty ; rdfs:domain pol:Person ; rdfs:range pol:Partei .
+pol:unterstützt     a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:RechtlichesInstrument .
+pol:lehntAb         a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:RechtlichesInstrument .
+pol:kritisiert      a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:RechtlichesInstrument .
+pol:befürwortet     a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:RechtlichesInstrument .
+pol:begrüßt         a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:RechtlichesInstrument .
+pol:prognostiziert  a owl:ObjectProperty ; rdfs:domain pol:Organisation ; rdfs:range pol:WirtschaftlicheFolge .
+pol:begrenzt        a owl:ObjectProperty ; rdfs:range pol:WirtschaftlicheFolge .
+pol:warntVor        a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:WirtschaftlicheFolge ;
+    rdfs:comment "Akteur benennt negativen Effekt ohne Studiennachweis — epistemisch: Meinung/Risikohypothese"@de .
+pol:erwartet        a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:WirtschaftlicheFolge ;
+    rdfs:comment "Akteur formuliert positive oder neutrale Prognose ohne institutionellen Beleg"@de .
+pol:behauptet       a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:WirtschaftlicheFolge ;
+    rdfs:comment "Epistemisch offene Assertion — Wahrheitsgehalt weder bestätigt noch widerlegt"@de .
+pol:zitiert         a owl:ObjectProperty ; rdfs:domain pol:Person  ; rdfs:range pol:WirtschaftlicheFolge ;
+    rdfs:comment "Akteur gibt Ergebnis einer Studie/Institution explizit wieder (Sekundärzitat)"@de .
+pol:fordertNachbesserung a owl:ObjectProperty ; rdfs:domain pol:Akteur ; rdfs:range pol:PolitischeMaßnahme .
+
+# ── Data Properties ────────────────────────────────────────
+pol:hatDatum        a owl:DatatypeProperty ; rdfs:range xsd:date .
+pol:wirksam_ab      a owl:DatatypeProperty ; rdfs:range xsd:date ; rdfs:comment "Inkrafttreten einer Relation (z.B. Änderung ab Datum)"@de .
+pol:hatStatus       a owl:DatatypeProperty ; rdfs:range xsd:string .
+pol:hatTendenz      a owl:DatatypeProperty ; rdfs:range xsd:string .
+pol:hatRolle        a owl:DatatypeProperty ; rdfs:range xsd:string .
+pol:hatBeschreibung a owl:DatatypeProperty ; rdfs:range xsd:string .
+
+# ── owl:sameAs — Linked Data Alignment (Wikidata) ──────────
+# Gesetze / EU-Rechtsakte
+pol:EPBD        owl:sameAs wd:Q847166 .
+
+# Ministerien
+pol:BMWE        owl:sameAs wd:Q320037 .
+pol:BMWSB       owl:sameAs wd:Q108729686 .
+pol:BMJ         owl:sameAs wd:Q317348 .
+
+# Parteien
+pol:CDU         owl:sameAs wd:Q49762 .
+pol:CSU         owl:sameAs wd:Q49761 .
+pol:SPD         owl:sameAs wd:Q49763 .
+pol:Grüne       owl:sameAs wd:Q49766 .
+pol:AfD         owl:sameAs wd:Q23911 .
+pol:Linke       owl:sameAs wd:Q49764 .
+
+# Personen
+pol:Merz        owl:sameAs wd:Q41048 .
+pol:MüllerS     owl:sameAs wd:Q95088386 .
+pol:Badum       owl:sameAs wd:Q87726390 .
+pol:TaherSaleh  owl:sameAs wd:Q108824959 .
+pol:Kipping     owl:sameAs wd:Q76956 .
+pol:Stümpfig    owl:sameAs wd:Q96287022 .
+
+# Verbände / Organisationen
+pol:VDMA        owl:sameAs wd:Q698879 .
+pol:DMB         owl:sameAs wd:Q1502451 .
+pol:ÖkoInstitut owl:sameAs wd:Q693965 .
+pol:DNR         owl:sameAs wd:Q1218847 .
+`;
+  const blob = new Blob([ttl], { type: 'text/turtle;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gmodg-ontology.ttl';
+  a.click();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  ONTOLOGIE-SCHEMA VIEW
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ONTO = {
+  classes: [
+    { id:"Thing",                    label:"owl:Thing",                   parent:null,                    color:"#455a64" },
+    { id:"RechtlichesInstrument",    label:"RechtlichesInstrument",       parent:"Thing",                 color:"#1565C0" },
+    { id:"Bundesgesetz",             label:"Bundesgesetz",                parent:"RechtlichesInstrument", color:"#1976D2" },
+    { id:"Verordnung",               label:"Verordnung",                  parent:"RechtlichesInstrument", color:"#1976D2" },
+    { id:"EURechtakt",               label:"EURechtakt",                  parent:"RechtlichesInstrument", color:"#0288D1" },
+    { id:"EURichtlinie",             label:"EURichtlinie",                parent:"EURechtakt",            color:"#0288D1" },
+    { id:"Gesetzgebungsverfahren",   label:"Gesetzgebungsverfahren",      parent:"Thing",                 color:"#E65100" },
+    { id:"Kabinettsbeschluss",       label:"Kabinettsbeschluss",          parent:"Gesetzgebungsverfahren",color:"#F57C00" },
+    { id:"Evaluierung",              label:"Evaluierung",                 parent:"Gesetzgebungsverfahren",color:"#F9A825" },
+    { id:"PolitischeAbsicht",        label:"PolitischeAbsicht",           parent:"Thing",                 color:"#6D4C41" },
+    { id:"Kommune",                  label:"Kommune",                     parent:"Organisation",           color:"#2E7D32" },
+    { id:"PolitischeMaßnahme",       label:"PolitischeMaßnahme",          parent:"Thing",                 color:"#2E7D32" },
+    { id:"Maßnahmenpaket",           label:"Maßnahmenpaket",              parent:"PolitischeMaßnahme",    color:"#388E3C" },
+    { id:"OrdnungsrechtlicheRegelung",label:"OrdnungsrechtlicheRegelung", parent:"PolitischeMaßnahme",    color:"#43A047" },
+    { id:"Fördermaßnahme",           label:"Fördermaßnahme",              parent:"PolitischeMaßnahme",    color:"#43A047" },
+    { id:"Mieterschutzregelung",     label:"Mieterschutzregelung",        parent:"PolitischeMaßnahme",    color:"#43A047" },
+    { id:"Akteur",                   label:"Akteur",                      parent:"Thing",                 color:"#6A1B9A" },
+    { id:"Person",                   label:"Person",                      parent:"Akteur",                color:"#7B1FA2" },
+    { id:"Politiker",                label:"Politiker",                   parent:"Person",                color:"#8E24AA" },
+    { id:"Experte",                  label:"Experte",                     parent:"Person",                color:"#8E24AA" },
+    { id:"Organisation",             label:"Organisation",                parent:"Akteur",                color:"#6A1B9A" },
+    { id:"Ministerium",              label:"Ministerium",                 parent:"Organisation",          color:"#C62828" },
+    { id:"Partei",                   label:"Partei",                      parent:"Organisation",          color:"#AD1457" },
+    { id:"Verband",                  label:"Verband",                     parent:"Organisation",          color:"#00695C" },
+    { id:"Denkfabrik",               label:"Denkfabrik",                  parent:"Organisation",          color:"#4527A0" },
+    { id:"WirtschaftlicheFolge",     label:"WirtschaftlicheFolge",        parent:"Thing",                 color:"#B71C1C" },
+    { id:"KlimaFolge",               label:"KlimaFolge",                  parent:"WirtschaftlicheFolge",  color:"#C62828" },
+    { id:"MarktFolge",               label:"MarktFolge",                  parent:"WirtschaftlicheFolge",  color:"#C62828" },
+    { id:"SozialFolge",              label:"SozialFolge",                 parent:"WirtschaftlicheFolge",  color:"#C62828" },
+    { id:"Haushaltswirkung",         label:"Haushaltswirkung",            parent:"WirtschaftlicheFolge",  color:"#C62828" },
+  ],
+  properties: [
+    { id:"löstAb",               domain:"Bundesgesetz",           range:"Bundesgesetz",            group:"rechtlich", note:"subPropertyOf ändert" },
+    { id:"ändert",               domain:"Bundesgesetz",           range:"RechtlichesInstrument",   group:"rechtlich" },
+    { id:"setztUm",              domain:"Bundesgesetz",           range:"EURechtakt",              group:"rechtlich" },
+    { id:"referenziertFür",      domain:"RechtlichesInstrument",  range:"RechtlichesInstrument",   group:"rechtlich" },
+    { id:"referenziertIn",       domain:"Akteur",                 range:"RechtlichesInstrument",   group:"rechtlich", note:"Akteur zitiert Gesetz in Stellungnahme" },
+    { id:"schafftAb",            domain:"RechtlichesInstrument",  range:"OrdnungsrechtlicheRegelung", group:"maßnahme", note:"subPropertyOf ändert" },
+    { id:"verpflichtet",          domain:"RechtlichesInstrument",  range:"PolitischeMaßnahme",      group:"maßnahme", note:"Adressat: privat (Gebot/Ordnungsrecht)" },
+    { id:"verankert",            domain:"RechtlichesInstrument",  range:"Mieterschutzregelung",    group:"maßnahme", note:"schafft geschützte Rechtsposition" },
+    { id:"ermächtigt",           domain:"RechtlichesInstrument",  range:"PolitischeMaßnahme",      group:"maßnahme", note:"Adressat: staatlich (Ermächtigungsgrundlage)" },
+    { id:"verabschiedet",        domain:"Gesetzgebungsverfahren", range:"RechtlichesInstrument",   group:"verfahren" },
+    { id:"hatFederführung",      domain:"Gesetzgebungsverfahren", range:"Ministerium",             group:"verfahren" },
+    { id:"gehtÜberIn",           domain:"Gesetzgebungsverfahren", range:"Gesetzgebungsverfahren",  group:"verfahren" },
+    { id:"schreibtVor",          domain:"RechtlichesInstrument",  range:"Evaluierung",             group:"verfahren" },
+    { id:"begründet",            domain:"PolitischeAbsicht",      range:"RechtlichesInstrument",   group:"politik" },
+    { id:"unterzeichnet",        domain:"Partei",                 range:"PolitischeAbsicht",       group:"politik" },
+    { id:"leitet",               domain:"Person",                 range:"Organisation",            group:"akteur" },
+    { id:"gehörtZu",             domain:"Person",                 range:"Partei",                  group:"akteur" },
+    { id:"unterstützt",          domain:"Akteur",                 range:"RechtlichesInstrument",   group:"position" },
+    { id:"befürwortet",          domain:"Akteur",                 range:"RechtlichesInstrument",   group:"position" },
+    { id:"begrüßt",              domain:"Akteur",                 range:"RechtlichesInstrument",   group:"position" },
+    { id:"kritisiert",           domain:"Akteur",                 range:"RechtlichesInstrument",   group:"position" },
+    { id:"lehntAb",              domain:"Akteur",                 range:"RechtlichesInstrument",   group:"position" },
+    { id:"fordertNachbesserung", domain:"Akteur",                 range:"PolitischeMaßnahme",      group:"position" },
+    { id:"fordertKontrollrecht", domain:"Akteur",                 range:"PolitischeMaßnahme",      group:"position" },
+    { id:"fordertVerstärkung",   domain:"Akteur",                 range:"PolitischeMaßnahme",      group:"position" },
+    { id:"bezweckt",             domain:"PolitischeMaßnahme",     range:"WirtschaftlicheFolge",    group:"folge",    note:"intendierter Effekt (Absicht, nicht Beweis)" },
+    { id:"birgtRisiko",          domain:"PolitischeMaßnahme",     range:"WirtschaftlicheFolge",    group:"folge",    note:"identifiziertes Risiko ohne belegte Kausalität" },
+    { id:"prognostiziert",       domain:"Organisation",           range:"WirtschaftlicheFolge",    group:"folge",    note:"wissenschaftliche Prognose durch Institut/Studie" },
+    { id:"bewirkt",              domain:"PolitischeMaßnahme",     range:"WirtschaftlicheFolge",    group:"folge",    note:"belegter Effekt — nur wenn Studie vorhanden" },
+    { id:"begrenzt",             domain:"PolitischeMaßnahme",     range:"WirtschaftlicheFolge",    group:"folge" },
+    { id:"zitiert",              domain:"Person",                 range:"WirtschaftlicheFolge",    group:"folge",  note:"Akteur gibt Studienergebnis explizit wieder (Sekundärzitat)" },
+    { id:"warntVor",             domain:"Akteur",                 range:"WirtschaftlicheFolge",    group:"folge",  note:"Akteur benennt negativen Effekt ohne Studiennachweis" },
+    { id:"erwartet",             domain:"Akteur",                 range:"WirtschaftlicheFolge",    group:"folge",  note:"Akteur formuliert positive/neutrale Prognose ohne Institut" },
+    { id:"behauptet",            domain:"Akteur",                 range:"WirtschaftlicheFolge",    group:"folge",  note:"Epistemisch offene Assertion — Wahrheitsgehalt ungeklärt" },
+    { id:"erarbeitet",           domain:"Person",                 range:"PolitischeMaßnahme",      group:"akteur" },
+    { id:"verantwortet",         domain:"Person",                 range:"RechtlichesInstrument",   group:"politik" },
+  ],
+  disjoint: [
+    { a:"RechtlichesInstrument", b:"Akteur",               note:"Gesetze sind keine Akteure" },
+    { a:"RechtlichesInstrument", b:"WirtschaftlicheFolge", note:"Gesetze sind keine ökonomischen Folgen" },
+    { a:"RechtlichesInstrument", b:"PolitischeMaßnahme",   note:"Gesetze enthalten Maßnahmen, sind aber nicht selbst Maßnahmen" },
+    { a:"Person",                b:"Organisation",          note:"Personen sind keine Organisationen (OWA-Ausnahme beachten)" },
+    { a:"Partei",                b:"Ministerium",           note:"Partei ≠ Ministerium — institutionell getrennt" },
+    { a:"Partei",                b:"Verband",               note:"Parteien sind keine Interessenverbände" },
+    { a:"PolitischeMaßnahme",    b:"WirtschaftlicheFolge",  note:"Maßnahmen sind nicht ihre eigenen Folgen" },
+    { a:"PolitischeAbsicht",     b:"PolitischeMaßnahme",    note:"Koalitionsvertrag ≠ konkrete gesetzliche Maßnahme" },
+  ]
+};
+
+const GROUP_COLORS = {
+  rechtlich: "#42A5F5", maßnahme: "#66BB6A",
+  verfahren: "#FFA726", politik:   "#AB47BC",
+  akteur:    "#EF5350", position:  "#FF7043",
+  folge:     "#26C6DA"
+};
+const GROUP_LABELS = {
+  rechtlich:"Rechtlich", maßnahme:"Maßnahme",
+  verfahren:"Verfahren", politik:"Politik",
+  akteur:"Akteur",       position:"Position",
+  folge:"Folge"
+};
+
+// ── View toggle ────────────────────────────────────────────────────────────────
+const graphWrap = document.getElementById('graph-wrap');
+const ontoWrap  = document.getElementById('onto-wrap');
+const searchWrap = document.getElementById('search-wrap');
+const legendEl2  = document.getElementById('legend');
+const controlsEl = document.getElementById('controls');
+
+let ontoRendered = false;
+
+const analyseWrap = document.getElementById('analyse-wrap');
+
+function setActiveTab(id) {
+  ['tab-data','tab-onto','tab-analyse'].forEach(t =>
+    document.getElementById(t).classList.toggle('active', t === id));
+}
+
+document.getElementById('tab-data').addEventListener('click', () => {
+  setActiveTab('tab-data');
+  graphWrap.style.display = '';
+  ontoWrap.classList.remove('show');
+  analyseWrap.classList.remove('show');
+  searchWrap.style.display = '';
+  legendEl2.style.display  = '';
+  controlsEl.style.display = '';
+  document.getElementById('detail').classList.remove('show');
+  clearRagHighlight();
+});
+
+document.getElementById('tab-onto').addEventListener('click', () => {
+  setActiveTab('tab-onto');
+  graphWrap.style.display = 'none';
+  ontoWrap.classList.add('show');
+  analyseWrap.classList.remove('show');
+  searchWrap.style.display = 'none';
+  legendEl2.style.display  = 'none';
+  controlsEl.style.display = 'none';
+  document.getElementById('detail').classList.remove('show');
+  if (!ontoRendered) { renderOntoView(); ontoRendered = true; }
+});
+
+document.getElementById('tab-analyse').addEventListener('click', () => {
+  setActiveTab('tab-analyse');
+  graphWrap.style.display = '';   // keep graph visible
+  ontoWrap.classList.remove('show');
+  analyseWrap.classList.add('show');
+  searchWrap.style.display = 'none';
+  legendEl2.style.display  = 'none';
+  controlsEl.style.display = 'none';
+  document.getElementById('detail').classList.remove('show');
+});
+
+// ── Render ontology view ───────────────────────────────────────────────────────
+function renderOntoView() {
+
+  // 1. Class hierarchy tree (left panel)
+  const treeEl = document.getElementById('onto-tree-items');
+  const byId = {};
+  ONTO.classes.forEach(c => byId[c.id] = c);
+
+  function renderTreeNode(cls, depth) {
+    const item = document.createElement('div');
+    item.className = 'tree-item';
+    item.dataset.id = cls.id;
+    item.style.paddingLeft = (12 + depth * 14) + 'px';
+    const children = ONTO.classes.filter(c => c.parent === cls.id);
+    item.innerHTML = `
+      <span class="tree-dot" style="background:${cls.color}"></span>
+      <span class="tree-label">${cls.label}</span>
+      ${children.length ? `<span class="tree-sub" style="margin-left:auto">(${children.length})</span>` : ''}`;
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      highlightSchemaNode(cls.id);
+    });
+    treeEl.appendChild(item);
+    children.forEach(child => renderTreeNode(child, depth + 1));
+  }
+  ONTO.classes.filter(c => c.parent === null).forEach(root => renderTreeNode(root, 0));
+
+  // 2. Property filter chips
+  const filtersEl = document.getElementById('prop-filters');
+  const activeGroups = new Set(Object.keys(GROUP_COLORS));
+  Object.entries(GROUP_COLORS).forEach(([grp, col]) => {
+    const chip = document.createElement('div');
+    chip.className = 'prop-chip active';
+    chip.textContent = GROUP_LABELS[grp];
+    chip.style.background = col + '33';
+    chip.style.color = col;
+    chip.style.borderColor = col + '66';
+    chip.dataset.grp = grp;
+    chip.addEventListener('click', () => {
+      if (activeGroups.has(grp)) { activeGroups.delete(grp); chip.classList.remove('active'); }
+      else { activeGroups.add(grp); chip.classList.add('active'); }
+      updateSchemaEdges();
+    });
+    filtersEl.appendChild(chip);
+  });
+
+  // 3. Properties table
+  const tableEl = document.getElementById('prop-table');
+  tableEl.innerHTML = ONTO.properties.map(p => `
+    <tr data-grp="${p.group}">
+      <td><span class="prop-id" style="color:${GROUP_COLORS[p.group]}">${p.id}</span>
+          ${p.note ? `<div class="prop-note">${p.note}</div>` : ''}</td>
+      <td class="prop-dom">${p.domain}</td>
+      <td class="prop-arr">→</td>
+      <td class="prop-rng">${p.range}</td>
+    </tr>`).join('');
+
+  // 4. Disjoint axioms
+  const disjEl = document.getElementById('disjoint-list');
+  disjEl.innerHTML = ONTO.disjoint.map(d => `
+    <div class="disjoint-item">
+      <span class="disjoint-cls">${d.a}</span>
+      <span class="disjoint-sym">⊥</span>
+      <span class="disjoint-cls">${d.b}</span>
+      <span class="disjoint-note">${d.note}</span>
+    </div>`).join('');
+
+  // 5. Schema graph (D3 force on classes only)
+  const oSvg = d3.select('#onto-canvas');
+  const ow = oSvg.node().clientWidth  || 800;
+  const oh = oSvg.node().clientHeight || 600;
+
+  const oDefs = oSvg.append('defs');
+  // subClassOf arrow
+  oDefs.append('marker').attr('id','sc-arrow')
+    .attr('viewBox','0 -4 8 8').attr('refX',16).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','#3a3d50');
+  // property arrows per group
+  Object.entries(GROUP_COLORS).forEach(([grp, col]) => {
+    oDefs.append('marker').attr('id','p-arrow-'+grp)
+      .attr('viewBox','0 -4 8 8').attr('refX',16).attr('refY',0)
+      .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',col);
+  });
+  // disjoint marker
+  oDefs.append('marker').attr('id','dj-arrow')
+    .attr('viewBox','0 -4 8 8').attr('refX',8).attr('refY',0)
+    .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','#ef5350');
+
+  const oG = oSvg.append('g');
+  oSvg.call(d3.zoom().scaleExtent([0.2,3]).on('zoom', e => oG.attr('transform', e.transform)));
+
+  // Nodes = classes (exclude owl:Thing for graph, keep for tree)
+  const ontoNodes = ONTO.classes.filter(c => c.id !== 'Thing').map(c => ({...c}));
+  const nodeById  = {};
+  ontoNodes.forEach(n => nodeById[n.id] = n);
+
+  // subClassOf links
+  const subLinks = ontoNodes
+    .filter(c => c.parent && c.parent !== 'Thing')
+    .map(c => ({ source: c.id, target: c.parent, type:'subClassOf' }));
+
+  // property links (deduplicated by domain→range pair, one per pair)
+  const propPairs = new Map();
+  ONTO.properties.forEach(p => {
+    if (!nodeById[p.domain] || !nodeById[p.range]) return;
+    const key = p.domain + '→' + p.range;
+    if (!propPairs.has(key)) propPairs.set(key, { source: p.domain, target: p.range, type:'property', group: p.group, props:[] });
+    propPairs.get(key).props.push(p.id);
+  });
+  const propLinks = [...propPairs.values()];
+
+  // disjoint links (between top-level classes only)
+  const disjLinks = ONTO.disjoint
+    .filter(d => nodeById[d.a] && nodeById[d.b])
+    .map(d => ({ source: d.a, target: d.b, type:'disjoint', note: d.note }));
+
+  const allLinks = [...subLinks, ...propLinks, ...disjLinks];
+
+  const oSim = d3.forceSimulation(ontoNodes)
+    .force('link', d3.forceLink(allLinks).id(d=>d.id)
+      .distance(l => l.type === 'subClassOf' ? 70 : l.type === 'disjoint' ? 220 : 160)
+      .strength(l => l.type === 'subClassOf' ? 0.8 : l.type === 'disjoint' ? 0.05 : 0.15))
+    .force('charge', d3.forceManyBody().strength(-320))
+    .force('center', d3.forceCenter(ow/2, oh/2))
+    .force('collide', d3.forceCollide(42));
+
+  // Draw edges
+  const edgeG = oG.append('g');
+
+  const subEdgeSel = edgeG.selectAll('line.subClassOf').data(subLinks).join('line')
+    .attr('class','schema-edge subClassOf')
+    .attr('stroke','#3a3d6080')
+    .attr('stroke-width',1.5)
+    .attr('marker-end','url(#sc-arrow)');
+
+  const propEdgeSel = edgeG.selectAll('path.propedge').data(propLinks).join('path')
+    .attr('class', d => 'schema-edge property propedge grp-'+d.group)
+    .attr('stroke', d => GROUP_COLORS[d.group])
+    .attr('stroke-dasharray','5,3')
+    .attr('stroke-width',1.2)
+    .attr('marker-end', d => `url(#p-arrow-${d.group})`)
+    .attr('opacity', 0.7);
+
+  const propLabelSel = edgeG.selectAll('text.schema-elabel').data(propLinks).join('text')
+    .attr('class','schema-elabel grp-label')
+    .attr('text-anchor','middle')
+    .attr('fill', d => GROUP_COLORS[d.group])
+    .text(d => d.props.join(', ').slice(0,30));
+
+  const disjEdgeSel = edgeG.selectAll('line.disjoint').data(disjLinks).join('line')
+    .attr('class','schema-edge disjoint')
+    .attr('stroke','#ef535055')
+    .attr('stroke-dasharray','4,3')
+    .attr('stroke-width',1.2)
+    .attr('marker-end','url(#dj-arrow)');
+
+  // ⊥ label on disjoint edges
+  const disjLabelSel = edgeG.selectAll('text.dj-label').data(disjLinks).join('text')
+    .attr('class','schema-elabel dj-label')
+    .attr('text-anchor','middle')
+    .attr('fill','#ef535088')
+    .text('⊥');
+
+  // Draw nodes
+  const nodeG = oG.append('g');
+  const ontoNodeSel = nodeG.selectAll('g.schema-node').data(ontoNodes).join('g')
+    .attr('class','schema-node')
+    .call(d3.drag()
+      .on('start',(e,d)=>{ oSim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+      .on('end',  (e,d)=>{ oSim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+  ontoNodeSel.append('rect')
+    .attr('width', d => Math.max(80, d.label.length * 6.5))
+    .attr('height', 24)
+    .attr('x', d => -Math.max(80, d.label.length * 6.5)/2)
+    .attr('y', -12)
+    .attr('rx', 5)
+    .attr('fill', d => d.color + 'cc')
+    .attr('stroke', d => d.color)
+    .attr('stroke-width', 1.5);
+
+  ontoNodeSel.append('text')
+    .attr('text-anchor','middle').attr('dominant-baseline','middle')
+    .attr('fill','#fff').attr('font-size', 10).attr('font-weight', 500)
+    .text(d => d.label);
+
+  oSim.on('tick', () => {
+    subEdgeSel
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+
+    // curved prop edges (arc to avoid overlap)
+    propEdgeSel.attr('d', d => {
+      const dx = d.target.x - d.source.x, dy = d.target.y - d.source.y;
+      const dr = Math.sqrt(dx*dx+dy*dy) * 0.7;
+      return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+    });
+    propLabelSel
+      .attr('x', d => (d.source.x+d.target.x)/2 + (d.target.y-d.source.y)*0.15)
+      .attr('y', d => (d.source.y+d.target.y)/2 - (d.target.x-d.source.x)*0.15);
+
+    disjEdgeSel
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    disjLabelSel
+      .attr('x',d=>(d.source.x+d.target.x)/2)
+      .attr('y',d=>(d.source.y+d.target.y)/2);
+
+    ontoNodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+
+  // update filter visibility
+  function updateSchemaEdges() {
+    propEdgeSel.attr('display', d => activeGroups.has(d.group) ? null : 'none');
+    propLabelSel.attr('display', d => activeGroups.has(d.group) ? null : 'none');
+    document.querySelectorAll('#prop-table tr').forEach(tr => {
+      tr.style.display = activeGroups.has(tr.dataset.grp) ? '' : 'none';
+    });
+  }
+  window.updateSchemaEdges = updateSchemaEdges;
+
+  // highlight selected class
+  function highlightSchemaNode(id) {
+    ontoNodeSel.selectAll('rect')
+      .attr('stroke-width', d => d.id === id ? 3 : 1.5)
+      .attr('filter', d => d.id === id ? 'brightness(1.4)' : null);
+    // connected props
+    const connected = new Set([id]);
+    ONTO.properties.forEach(p => { if(p.domain===id||p.range===id) { connected.add(p.domain); connected.add(p.range); }});
+    ontoNodeSel.attr('opacity', d => connected.has(d.id) ? 1 : 0.25);
+    propEdgeSel.attr('opacity', d => {
+      const s = d.source.id||d.source, t = d.target.id||d.target;
+      return (s===id||t===id) && activeGroups.has(d.group) ? 1 : 0.05;
+    });
+  }
+  window.highlightSchemaNode = highlightSchemaNode;
+
+  // click on node shows connected properties
+  ontoNodeSel.on('click', (e, d) => {
+    e.stopPropagation();
+    document.querySelectorAll('.tree-item').forEach(i => {
+      i.classList.toggle('selected', i.dataset.id === d.id);
+    });
+    highlightSchemaNode(d.id);
+  });
+  oSvg.on('click', () => {
+    ontoNodeSel.attr('opacity',1);
+    propEdgeSel.attr('opacity',0.7);
+    ontoNodeSel.selectAll('rect').attr('stroke-width',1.5).attr('filter',null);
+    document.querySelectorAll('.tree-item').forEach(i=>i.classList.remove('selected'));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  TEMPORALE DATENSCHICHT
+//  Jede Entität und Beziehung trägt: validFrom, validUntil, source, note
+//  Widersprüche: conflictsWith → ID einer anderen Kante
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ISO-Datum → JS Date
+const isoToDate = s => s ? new Date(s) : null;
+
+// Temporale Metadaten für Knoten (ergänzt fehlende validFrom)
+const NODE_TEMPORAL = {
+  "GEG_Alt":         { validFrom:"2024-01-01", validUntil:"2027-01-01", note:"Ampel-Novelle; wird durch GModG abgelöst (erw. Inkrafttreten 2027)" },
+  "EPBD":            { validFrom:"2024-05-24",  note:"Im EU-Amtsblatt veröffentlicht 24.5.2024" },
+  "Koalitionsvertrag":{ validFrom:"2025-03-01", note:"Koalitionsvertrag CDU/CSU–SPD unterzeichnet" },
+  "GModG":           { validFrom:"2026-05-13",  note:"Kabinettsbeschluss 13.5.2026; noch kein Inkrafttreten" },
+  "Kabinett":        { validFrom:"2026-05-13",  validUntil:"2026-05-13", note:"Einmaliges Ereignis" },
+  "BT_Einbringung":  { validFrom:"2026-09-01",  note:"Geplant Sommer/Herbst 2026; noch nicht erfolgt" },
+  "Abschaffung65":   { validFrom:"2026-05-13",  note:"Teil des GModG-Entwurfs ab Kabinettsbeschluss" },
+  "FreieHeizung":    { validFrom:"2026-05-13" },
+  "BioTreppe":       { validFrom:"2029-01-01",  note:"Erste Stufe (10%) ab 1.1.2029; stufenweise bis 60% 2040" },
+  "Mieterschutz":    { validFrom:"2028-01-01",  note:"Hälftige CO₂-Kostenteilung ab 1.1.2028" },
+  "EPBDUmsetzung":   { validFrom:"2026-05-13" },
+  "CO2Anstieg":      { validFrom:"2026-03-12",  note:"Öko-Institut-Prognose erstmals zitiert März 2026" },
+  "Planungssicherheit":{ validFrom:"2026-04-23", note:"Erstmals thematisiert von Knoerig (CDU) 23.4.2026" },
+  "ChancenGrüngas":  { validFrom:"2026-05-16",  note:"Rouenhoff (CDU) 16.5.2026" },
+  "KostenrisikoMieter":{ validFrom:"2026-02-25", note:"DMB-Warnung ab Bekanntwerden des Referentenentwurfs" },
+  "Eval2030":        { validFrom:"2030-01-01",  note:"Gesetzlich vorgesehene Evaluierungsklausel" },
+  "WPG":             { validFrom:"2024-01-01",  note:"Wärmeplanungsgesetz — für Großstädte >100.000 EW seit 1.1.2024" },
+  "WPGÄnderung":     { validFrom:"2026-05-13",  note:"Referentenentwurf parallel zu GModG; noch nicht beschlossen" },
+  "KWPDüsseldorf":   { validFrom:"2025-12-19",  validUntil:"2026-06-30", note:"Offenlage 19.12.2025; Pflicht-Deadline 30.6.2026" },
+  "Düsseldorf":      { validFrom:"2025-12-19",  note:"Aktiv seit Beginn des Offenlage-Verfahrens" },
+  // Kommunale Programme
+  "SolaroffenseSTG":    { validFrom:"2022-01-01",  note:"Aktives Programm; Balkonkraftwerk-Förderung eingestellt Mai 2026" },
+  "KWKlimafreundlich":  { validFrom:"2026-10-01",  note:"Neustart 1.10.2026; vorher pausiert; Sondervermögen 60 Mio. €" },
+  "KlimaBonus_LB":      { validFrom:"2022-01-01",  validUntil:"2026-01-01", note:"KlimaBonus LK Ludwigsburg eingefroren seit Anfang 2026" },
+  "HHKlima100STG":      { validFrom:"2022-01-01",  note:"Jährlich fortlaufendes Klimapaket Stuttgart" },
+  "HHKlima60DUS":       { validFrom:"2026-10-01",  note:"Sondervermögen für Neustart DUS-Förderprogramm ab 1.10.2026" },
+};
+
+// Temporale Metadaten für Links (ergänzt fehlende since; fügt until/conflictsWith hinzu)
+// Format: key = "sourceId→targetId→relation" (eindeutig), value = { since, until, source, conflictsWith, note }
+const LINK_TEMPORAL = {
+  // Politische Positionen: Datierte Äußerungen
+  "Badum→GModG→lehntAb":         { since:"2026-02-25", source:"LinkedIn", note:"Erstäußerung nach Bekanntwerden des GModG-Entwurfs" },
+  "TaherSaleh→GModG→lehntAb":    { since:"2026-03-12", source:"LinkedIn", note:"Bezieht sich auf Öko-Institut-Prognose" },
+  "Stümpfig→GModG→lehntAb":      { since:"2026-04-21", source:"LinkedIn" },
+  "Bernhard→GModG→lehntAb":      { since:"2026-04-17", source:"X/Twitter", note:"AfD fordert vollständige GEG-Abschaffung" },
+  "Kipping→GModG→kritisiert":    { since:"2026-05-13", source:"LinkedIn", note:"Am Tag des Kabinettsbeschlusses" },
+  "Roloff→GModG→befürwortet":    { since:"2026-05-08", source:"LinkedIn" },
+  "Brinkmann→GModG→befürwortet": { since:"2026-02-25", source:"LinkedIn" },
+  "MüllerS→GModG→befürwortet":   { since:"2026-05-15", source:"LinkedIn" },
+  // Prognosen
+  "ÖkoInstitut→CO2Anstieg→prognostiziert": { since:"2026-03-01", source:"Öko-Institut Studie", note:"Studie zur Klimawirkung des GModG" },
+  // Verfahren
+  "Kabinett→GModG→verabschiedet":{ since:"2026-05-13", until:"2026-05-13", source:"Bundesregierung Pressemitteilung" },
+  // Gesetz: Änderungen mit Wirkungsdatum
+  "GModG→CO2KostAufG→ändert":    { since:"2028-01-01", note:"Mieterschutz-Stufe 1 ab 2028" },
+  "GModG→SchfHwG→ändert":        { since:"2029-01-01", note:"Vollzug Bio-Treppe ab 2029" },
+  "GModG→OWiG→ändert":           { since:"2029-01-01", note:"Bußgelder Bio-Treppe ab 2029" },
+  // Hypothetische Positionsänderung (Demonstration der Temporal-Funktion):
+  // → Wenn nach Bundestagsdebatte (Herbst 2026) SPD-Fraktion stärkeren Mieterschutz fordert,
+  //   könnte Roloffs Position sich verschieben von "befürwortet" zu "fordertNachbesserung"
+  "Roloff→Mieterschutz→fordertNachbesserung": {
+    since:"2026-10-15", source:"Hypothetisch (Demo)", note:"Beispiel: Positionsänderung nach Bundestagsdebatte",
+    conflictsWith:"Roloff→GModG→befürwortet"
+  },
+};
+
+// Milestones für Timeline-Marker
+const TL_MILESTONES = [
+  { date:"2024-01-01", label:"GEG\nAmpel",  key:true  },
+  { date:"2024-05-24", label:"EPBD\nin Kraft", key:false },
+  { date:"2025-03-01", label:"Koalitions-\nvertrag", key:true  },
+  { date:"2026-02-25", label:"1. Pos.\nGModG", key:false },
+  { date:"2026-05-13", label:"Kabinetts-\nbeschluss", key:true  },
+  { date:"2026-09-01", label:"BT-\nEinbringung", key:false },
+  { date:"2028-01-01", label:"Mieter-\nschutz", key:true  },
+  { date:"2029-01-01", label:"Bio-\nTreppe", key:true  },
+  { date:"2030-01-01", label:"Evaluie-\nrung",  key:true  },
+];
+
+const TL_START = new Date("2023-10-01");
+const TL_END   = new Date("2031-01-01");
+const TL_RANGE = TL_END - TL_START;
+
+function sliderToDate(val) {
+  return new Date(TL_START.getTime() + (val / 100) * TL_RANGE);
+}
+function dateToSlider(d) {
+  return ((new Date(d) - TL_START) / TL_RANGE) * 100;
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('de-DE', { month: 'short', year: 'numeric' });
+}
+
+// ── Merge temporal metadata into nodes/links ───────────────────────────────────
+nodes.forEach(n => {
+  const t = NODE_TEMPORAL[n.id];
+  if (t) { n.validFrom = t.validFrom; n.validUntil = t.validUntil; n.temporalNote = t.note; }
+});
+
+// ── Timeline UI ────────────────────────────────────────────────────────────────
+const slider  = document.getElementById('tl-slider');
+const tlLabel = document.getElementById('tl-date-label');
+const marksEl = document.getElementById('tl-marks');
+let tlActive  = false; // false = live (no filter), true = history mode
+
+// Set initial slider to today (2026-05-19)
+slider.value = dateToSlider("2026-05-19").toFixed(1);
+
+// Render milestone markers
+TL_MILESTONES.forEach(m => {
+  const pct = dateToSlider(m.date);
+  const mark = document.createElement('div');
+  mark.className = 'tl-mark' + (m.key ? ' key' : '');
+  mark.style.left = pct + '%';
+  mark.innerHTML = `<div class="tl-mark-tick"></div><div class="tl-mark-label">${m.label.replace(/\n/g,'<br>')}</div>`;
+  marksEl.appendChild(mark);
+});
+
+// Mode buttons
+document.getElementById('tl-live').addEventListener('click', () => {
+  tlActive = false;
+  document.getElementById('tl-live').classList.add('active');
+  document.getElementById('tl-history').classList.remove('active');
+  tlLabel.textContent = 'Aktuell';
+  applyTemporalFilter(null); // show everything
+});
+document.getElementById('tl-history').addEventListener('click', () => {
+  tlActive = true;
+  document.getElementById('tl-history').classList.add('active');
+  document.getElementById('tl-live').classList.remove('active');
+  applyTemporalFilter(sliderToDate(slider.value));
+});
+
+slider.addEventListener('input', () => {
+  if (!tlActive) {
+    document.getElementById('tl-history').click();
+  }
+  const d = sliderToDate(slider.value);
+  tlLabel.textContent = fmtDate(d);
+  applyTemporalFilter(d);
+});
+
+// ── Temporal filter logic ──────────────────────────────────────────────────────
+function applyTemporalFilter(currentDate) {
+  if (!currentDate) {
+    // Live mode: show all, reset styles
+    nodeSel
+      .attr('opacity', 1)
+      .select('circle').attr('stroke', '#0f1117').attr('filter', null);
+    linkSel
+      .attr('opacity', 1)
+      .attr('stroke', d => linkColor(d.relation))
+      .attr('stroke-dasharray', null);
+    document.getElementById('stats').textContent =
+      `${nodes.length} Knoten · ${links.length} Kanten · Aktuell`;
+    return;
+  }
+
+  let visNodes = 0, visLinks = 0;
+
+  // ── Nodes ──
+  nodeSel.each(function(d) {
+    const el = d3.select(this);
+    const vf = d.validFrom  ? new Date(d.validFrom)  : null;
+    const vu = d.validUntil ? new Date(d.validUntil) : null;
+
+    if (vf && currentDate < vf) {
+      // Entity doesn't exist yet
+      el.attr('opacity', 0.12);
+      el.select('circle').attr('stroke', '#3a3d50').attr('filter', null);
+    } else if (vu && currentDate > vu) {
+      // Entity has expired / been superseded
+      el.attr('opacity', 0.25);
+      el.select('circle').attr('stroke', '#ef5350').attr('filter', 'grayscale(80%)');
+    } else {
+      el.attr('opacity', 1);
+      el.select('circle').attr('stroke', '#0f1117').attr('filter', null);
+      visNodes++;
+    }
+  });
+
+  // ── Links ──
+  linkSel.each(function(d) {
+    const el = d3.select(this);
+    const lt = LINK_TEMPORAL[`${d.source.id||d.source}→${d.target.id||d.target}→${d.relation}`];
+    const since = d.since || (lt && lt.since) ? new Date(d.since || lt.since) : null;
+    const until = d.until || (lt && lt.until) ? new Date(d.until || lt.until) : null;
+    const hasConflict = d.conflictsWith || (lt && lt.conflictsWith);
+
+    if (since && currentDate < since) {
+      el.attr('opacity', 0.05).attr('stroke-dasharray', '2,4');
+    } else if (until && currentDate > until) {
+      el.attr('opacity', 0.15).attr('stroke', '#ef535066').attr('stroke-dasharray', '2,4');
+    } else if (hasConflict) {
+      // Conflicting claim — show in orange dashed
+      el.attr('opacity', 0.8)
+        .attr('stroke', '#ff980099')
+        .attr('stroke-dasharray', '4,3');
+      visLinks++;
+    } else if (d.isDemo && currentDate < new Date("2026-10-15")) {
+      el.attr('opacity', 0.05).attr('stroke-dasharray', '2,4');
+    } else {
+      el.attr('opacity', 0.85)
+        .attr('stroke', linkColor(d.relation))
+        .attr('stroke-dasharray', null);
+      visLinks++;
+    }
+  });
+
+  document.getElementById('stats').textContent =
+    `${fmtDate(currentDate)} · ${visNodes} Knoten aktiv · ${visLinks} Kanten aktiv`;
+}
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  width  = svg.node().clientWidth;
+  height = svg.node().clientHeight;
+  simulation.force('center', d3.forceCenter(width/2, height/2))
+             .force('x', d3.forceX(width/2).strength(0.04))
+             .force('y', d3.forceY(height/2).strength(0.04))
+             .alpha(0.2).restart();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── GraphRAG Analyse Engine ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Stop-word list (German policy context) ────────────────────────────────────
+const RAG_STOP = new Set([
+  'welche','welcher','welches','welchem','welchen','durch','werden','haben','sind',
+  'wird','beim','eine','einem','einen','einer','oder','und','auch','dass','dies',
+  'aber','nicht','noch','nach','über','unter','von','für','mit','bei','das','die',
+  'der','dem','den','des','ein','wie','was','wer','ist','am','beim','zum','zur',
+  'sich','ihnen','ihre','ihrer','ihrem','ihres','sie','dieser','dieses','diesem',
+  'diesen','mehr','sehr','kann','könnten','sollen','beim','gegen','damit','daraus',
+  'welche','gibt','bitte','zeige','erkläre','analysiere','frage','antwort'
+]);
+
+// ── nodeColor lookup ──────────────────────────────────────────────────────────
+function ragNodeColor(type) {
+  const cls = ontology.classes.find(c => c.id === type);
+  return cls ? cls.color : '#888';
+}
+
+// ── Core retrieval function ───────────────────────────────────────────────────
+function graphRagRetrieve(queryText, { topK = 10, hopDepth = 1 } = {}) {
+  const keywords = queryText.toLowerCase()
+    .replace(/[?.,!;:]/g, '')
+    .split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length > 2 && !RAG_STOP.has(w));
+
+  if (!keywords.length) return null;
+
+  // Score every node against query keywords
+  const scored = nodes.map(n => {
+    const text = [n.label, n.fullLabel||'', n.desc||'', n.type||'']
+      .join(' ').toLowerCase().replace(/\n/g,' ');
+    let score = 0;
+    keywords.forEach(kw => {
+      const freq = (text.match(new RegExp(kw,'g'))||[]).length;
+      score += freq;
+      if ((n.label||'').toLowerCase().includes(kw)) score += 4;   // label boost
+      if ((n.fullLabel||'').toLowerCase().includes(kw)) score += 2;
+      if ((n.type||'').toLowerCase().includes(kw)) score += 2;
+    });
+    return { node: n, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
+
+  const seedIds = new Set(scored.slice(0, topK).map(x => x.node.id));
+
+  // 1-hop expansion
+  const retrievedIds = new Set(seedIds);
+  if (hopDepth >= 1) {
+    links.forEach(l => {
+      const s = l.source.id || l.source;
+      const t = l.target.id || l.target;
+      if (seedIds.has(s)) retrievedIds.add(t);
+      if (seedIds.has(t)) retrievedIds.add(s);
+    });
+  }
+
+  // Retrieved link set
+  const retrievedLinks = links.filter(l => {
+    const s = l.source.id || l.source;
+    const t = l.target.id || l.target;
+    return retrievedIds.has(s) && retrievedIds.has(t);
+  });
+
+  // Find 2-hop path chains between seed nodes (for evidence display)
+  const chains = [];
+  const seen = new Set();
+  retrievedLinks.forEach(l1 => {
+    const s1 = l1.source.id || l1.source;
+    const t1 = l1.target.id || l1.target;
+    retrievedLinks.forEach(l2 => {
+      const s2 = l2.source.id || l2.source;
+      const t2 = l2.target.id || l2.target;
+      if (t1 === s2 && s1 !== t2) {
+        const key = `${s1}→${t1}→${t2}`;
+        if (!seen.has(key) && chains.length < 6) {
+          seen.add(key);
+          chains.push({ a: s1, rel1: l1.relation, b: t1, rel2: l2.relation, c: t2 });
+        }
+      }
+    });
+  });
+
+  return { seedIds, retrievedIds, retrievedLinks, chains, scored: scored.slice(0, topK), keywords };
+}
+
+// ── Apply visual highlight to graph ──────────────────────────────────────────
+window._ragActive = false;
+function applyRagHighlight({ retrievedIds, seedIds }) {
+  window._ragActive = true;
+  nodeSel.attr('opacity', n => retrievedIds.has(n.id) ? 1 : 0.07);
+  nodeSel.select('circle')
+    .attr('stroke', n => seedIds.has(n.id) ? '#00a4b3' : '#0f1117')
+    .attr('stroke-width', n => seedIds.has(n.id) ? 3 : 1.5)
+    .attr('filter', n => seedIds.has(n.id) ? 'drop-shadow(0 0 5px #00a4b399)' : null);
+  linkSel.attr('opacity', l => {
+    const s = l.source.id || l.source;
+    const t = l.target.id || l.target;
+    return (retrievedIds.has(s) && retrievedIds.has(t)) ? 0.9 : 0.03;
+  });
+  linkSel.attr('stroke-width', l => {
+    const s = l.source.id || l.source;
+    const t = l.target.id || l.target;
+    return (retrievedIds.has(s) && retrievedIds.has(t)) ? 2 : 1;
+  });
+}
+
+function clearRagHighlight() {
+  window._ragActive = false;
+  nodeSel.attr('opacity', 1);
+  nodeSel.select('circle')
+    .attr('stroke', '#0f1117').attr('stroke-width', 1.5).attr('filter', null);
+  linkSel.attr('opacity', 1).attr('stroke-width', 1);
+  document.getElementById('rag-result').classList.remove('show');
+  document.getElementById('rag-clear-btn').classList.remove('show');
+  document.querySelectorAll('.rag-q-card').forEach(c => c.classList.remove('rag-active'));
+  document.getElementById('rag-input').value = '';
+}
+
+// ── Render results into sidebar ───────────────────────────────────────────────
+function renderRagResult(result, showcaseAnswer) {
+  const { seedIds, retrievedIds, retrievedLinks, chains, scored, keywords } = result;
+
+  // Stats chips
+  const embSim = result.embeddingSimulated;
+  document.getElementById('rag-stats').innerHTML = `
+    <span class="rag-stat-chip">🔍 ${keywords.join(', ')}</span>
+    <span class="rag-stat-chip">Knoten: ${retrievedIds.size}</span>
+    <span class="rag-stat-chip">Kanten: ${retrievedLinks.length}</span>
+    <span class="rag-stat-chip">Pfadketten: ${chains.length}</span>
+    ${embSim ? `<span class="rag-stat-chip" style="background:#f5c03d22;color:#f5c03d;border-color:#f5c03d44" title="Diese Knoten würde Embedding-Retrieval finden — Keyword-Matching allein reicht nicht">⚡ ${embSim} via Embedding-Sim.</span>` : ''}`;
+
+  // Path chains
+  const pathsEl = document.getElementById('rag-paths');
+  pathsEl.innerHTML = '';
+  if (chains.length === 0) {
+    pathsEl.innerHTML = '<div style="font-size:10px;color:#7b8da3;padding:4px 0">Keine Mehrfach-Hop-Ketten gefunden.</div>';
+  } else {
+    chains.forEach(ch => {
+      const aNode = nodes.find(n => n.id === ch.a);
+      const bNode = nodes.find(n => n.id === ch.b);
+      const cNode = nodes.find(n => n.id === ch.c);
+      const div = document.createElement('div');
+      div.className = 'rag-path-chain';
+      div.innerHTML =
+        `<span class="pn">${aNode ? aNode.label.replace(/\n/,' ') : ch.a}</span>` +
+        ` <span class="pr">—${ch.rel1}→</span> ` +
+        `<span class="pn">${bNode ? bNode.label.replace(/\n/,' ') : ch.b}</span>` +
+        ` <span class="pr">—${ch.rel2}→</span> ` +
+        `<span class="pn">${cNode ? cNode.label.replace(/\n/,' ') : ch.c}</span>`;
+      pathsEl.appendChild(div);
+    });
+  }
+
+  // Seed node list
+  const nodesEl = document.getElementById('rag-nodes');
+  nodesEl.innerHTML = '';
+  scored.slice(0, 8).forEach(({ node, score }) => {
+    const row = document.createElement('div');
+    row.className = 'rag-node-row';
+    const isSeed = seedIds.has(node.id);
+    row.innerHTML = `
+      <span class="rag-node-dot" style="background:${ragNodeColor(node.type)}"></span>
+      <span class="rag-node-lbl">${node.fullLabel || node.label.replace(/\n/,' ')}</span>
+      ${isSeed ? '<span class="rag-seed-badge">Seed</span>' : ''}`;
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => showDetail(node));
+    nodesEl.appendChild(row);
+  });
+
+  // Answer box
+  const answerEl = document.getElementById('rag-answer');
+  if (showcaseAnswer) {
+    answerEl.innerHTML = `<div class="rag-answer-box">${showcaseAnswer}</div>`;
+  } else {
+    // Generic synthesis for custom queries
+    const topNodes = scored.slice(0,4).map(x => `<strong>${x.node.fullLabel||x.node.label.replace(/\n/,' ')}</strong>`).join(', ');
+    const rels = [...new Set(retrievedLinks.map(l => l.relation))].slice(0,5).join(', ');
+    answerEl.innerHTML = `<div class="rag-answer-box">
+      <span class="ra-label">🤖 Graph-Synthesetext (GraphRAG-Demo)</span>
+      Der retrievierte Subgraph umfasst <strong>${retrievedIds.size} Knoten</strong>
+      und <strong>${retrievedLinks.length} Kanten</strong>.
+      Die relevantensten Entitäten sind: ${topNodes}.
+      Im Subgraph aktive Relationstypen: <em>${rels}</em>.
+      <div class="ra-gap">In einer produktiven GraphRAG-Pipeline würde hier ein
+      LLM-generierter Synthesetext erscheinen, der die obigen Pfadketten und
+      Knotenattribute zu einer kohärenten Antwort verdichtet.
+      Alle hervorgehobenen Elemente im Graph bilden den Retrieval-Kontext.</div>
+    </div>`;
+  }
+
+  document.getElementById('rag-result').classList.add('show');
+  document.getElementById('rag-clear-btn').classList.add('show');
+}
+
+// ── Pre-written showcase answers ─────────────────────────────────────────────
+const SHOWCASE_QUERIES = [
+  {
+    text: 'Gewinner Verlierer profitieren Risiko Akteure GModG',
+    fullText: 'Welche Akteure profitieren vom GModG — und welche tragen das Risiko?',
+    answer: `<span class="ra-label">🤖 GraphRAG-Analyse · Gewinner &amp; Verlierer</span>
+      <strong>Gewinnerpfad</strong> (Graph-Evidenz):
+      <em>GModG → ermächtigt → FreieHeizung → bezweckt → ChancenGrüngas</em>.
+      Profiteure sind Akteure der Gaswirtschaft: <strong>SEFE</strong> (befürwortet GModG, sieht Potenzial für Gasnetze),
+      <strong>BBS</strong> (befürwortet), <strong>MüllerS/CDU</strong> (erwartet ChancenGrüngas + Planungssicherheit).
+      Die Bauindustrie (<strong>BAK, VDMA</strong>) begrüßt Investitionssicherheit.<br><br>
+      <strong>Verliererpfad</strong>:
+      <em>FreieHeizung → birgtRisiko → KostenrisikoMieter</em>;
+      <em>GModG → birgtRisiko → KWPDüsseldorf, SolaroffenseSTG, KWKlimafreundlich</em>.
+      <strong>DMB</strong> warnt vor Kostenrisiko Mieter; <strong>GermanZero</strong> warnt vor CO₂-Anstieg;
+      <strong>DNR</strong> lehnt ab (verfassungsrechtliche Bedenken).<br><br>
+      <em>ÖkoInstitut prognostiziert +172 Mio. t CO₂ bis 2040</em> —
+      ohne empirische Gegenprognose von Regierungsseite:
+      <span class="ra-cite">epistemische Asymmetrie messbar im KG.</span>
+      <div class="ra-gap"><strong>KG-Deduktion:</strong> Alle 5 Kommunalprogramme (Stuttgart, Düsseldorf ×2, Mettmann, Neuss)
+      sind über birgtRisiko-Kanten mit GModG verbunden — das kommunale Klimainvestitionsvolumen
+      (160+ Mio. €) ist systemisch gefährdet.</div>`
+  },
+  {
+    text: 'kommunale Wärmeplanung Düsseldorf gefährdet GModG KWP WPG',
+    fullText: 'Wie gefährdet ist die kommunale Wärmeplanung in Düsseldorf durch das GModG?',
+    answer: `<span class="ra-label">🤖 GraphRAG-Analyse · Risikoanalyse KWP Düsseldorf</span>
+      Der Graph zeigt einen <strong>3-stufigen Risikopfad</strong>:<br><br>
+      <em>GModG → schafftAb → Abschaffung65</em> (65%-EE-Pflicht entfällt ab Inkrafttreten ~2027)<br>
+      <em>GModG → birgtRisiko → KWPDüsseldorf</em> (KWP-Investitionsannahmen basierten auf 65%-Regel)<br>
+      <em>KWPDüsseldorf → referenziertFür → KWKlimafreundlich → bezweckt → 60 Mio. € Sondervermögen</em><br><br>
+      <strong>Zeitliche Verschärfung</strong>: WPG verpflichtet Düsseldorf zur Fertigstellung bis <em>30.6.2026</em> —
+      genau dann, wenn GModG die zugrunde liegende Bundespflicht abschafft.
+      WPGÄnderung (parallel zu GModG) bestätigt die Deadline, hebt sie aber nicht auf.<br><br>
+      <strong>Düsseldorf</strong> selbst warntVor (18.5.2026, Ausschuss für Umwelt &amp; Klima):
+      „Transformationspfad bleibt sinnvoll — GModG-Auswirkungen werden beobachtet."<br><br>
+      <span class="ra-cite">Risikobewertung: HOCH.</span>
+      <div class="ra-gap"><strong>KG-Deduktion:</strong> Das Risiko ist <em>systematisch</em>, nicht zufällig —
+      das Bundesgesetz untergräbt die Planungsgrundlage des kommunalen Instruments.
+      Ohne 65%-EE-Pflicht verliert der KWP seinen regulativen Hebel gegenüber Gebäudeeigentümern.</div>`
+  },
+  {
+    text: 'Förderung Maßnahmen Ballungsgebiete Solar PV Wärme kommunal Solaroffensive Wärmeplanung',
+    fullText: 'Welche Auswirkung hat das GModG auf Förderungen und Maßnahmen in deutschen Ballungsgebieten?',
+    answer: `<span class="ra-label">🤖 GraphRAG-Analyse · PV &amp; Wärme · Marktanalyse</span>
+      Der Graph zeigt für Energieberater im Bereich PV &amp; Wärme ein ambivalentes Bild:<br><br>
+      <strong>Risikopfad (kurzfristig):</strong><br>
+      <em>GModG → schafftAb → Abschaffung65</em>: Die 65%-EE-Pflicht entfällt ab Inkrafttreten.
+      Gebäudeeigentümer haben weniger Zwang zur Heizungsmodernisierung →
+      schwächere ordnungsrechtliche Nachfrage nach PV+Wärmepumpen-Kombinationen.
+      <strong>BSWSolar</strong> kritisiert GModG (Stellungnahme im Graph verankert).<br><br>
+      <strong>Chancenpfade (mittel- bis langfristig):</strong><br>
+      <em>GModG → verpflichtet → BioTreppe (ab 2029, 10%→60% bis 2040)</em>:
+      Neue Pflichtberatungsfelder für Biomethan, Bioheizöl, grünen Wasserstoff — Umrüstungsberatung wird Pflichtgeschäft.<br><br>
+      <strong>Direkte Förderprogramme in Ballungsgebieten</strong> (Projektpipeline für Energieberater):<br>
+      · <em>Stuttgart</em>: 300 €/kWp Dach-PV — aktives Programm, 100 Mio. €/Jahr Klimapaket<br>
+      · <em>Düsseldorf</em>: 1.000 €+200 €/kWp, <em>Neustart 1.10.2026</em> → Beratungs- und Installationspipeline ab Herbst 2026<br>
+      · <em>Kreis Mettmann</em>: 66.000 € (nur Stecker-PV, Losverfahren)<br>
+      · <em>Rhein-Kreis Neuss</em>: 50–100 € Pauschal (Stecker-PV)<br><br>
+      <strong>KWP als Vertriebsintelligenz:</strong>
+      KWPDüsseldorf weist 69 von 93 Zonen als dezentral aus —
+      das ist das natürliche Marktsegment für PV+Wärmepumpen.
+      Nur 24 Zonen sind für Fernwärme vorgesehen.
+      <div class="ra-gap"><strong>KG-Deduktion:</strong> Ohne 65%-EE-Pflicht verschiebt sich das Beratungsgeschäft
+      von ordnungsrechtlich getrieben zu beratungsgetrieben.
+      <em>Kommunale Wärmepläne werden zur wichtigsten Vertriebsintelligenz:</em>
+      Sie zeigen zonengenau, wo Fernwärme kommt und wo PV+WP der Standardpfad bleibt.
+      LK Ludwigsburg (KlimaBonus eingefroren) zeigt: Haushaltsdruck auf Kommunen
+      wächst — überregionale Beratung zu Bundes-/Landesprogrammen wird wertvoller.</div>`
+  },
+  {
+    text: 'SPD CDU Bundesland NRW Baden-Württemberg Positionierung politisch Partei',
+    fullText: 'Wie werden sich SPD und CDU in den Bundesländern positionieren — und welchen Impact haben sie in NRW und Baden-Württemberg?',
+    extraSeeds: ['Stuttgart','LKLudwigsburg','SolaroffenseSTG','KlimaBonus_LB','KreisMettmann','RheinKreisNeuss'],
+    answer: `<span class="ra-label">🤖 GraphRAG-Analyse · Politische Szenarien · NRW &amp; BW</span>
+      <strong>Bundesebene (KG-Evidenz):</strong><br>
+      <em>CDU → unterzeichnet → Koalitionsvertrag → begründet → GModG</em>:
+      CDU verantwortet die Technologieoffenheit als Markenkern.
+      <strong>MüllerS</strong> (CDU) erwartet ChancenGrüngas + Planungssicherheit —
+      diese Linie wird CDU-Länder prägen.<br>
+      <em>SPD → unterzeichnet → Koalitionsvertrag → begründet → GModG</em>:
+      SPD trägt das Gesetz mit, aber <strong>DMB</strong> (tendenziell SPD-nah) kritisiert GModG
+      und warnt vor Kostenrisiko Mieter.
+      Innere Spannung: <strong>Roloff</strong> befürwortet koalitionsstrukturell,
+      Demo-Kante zeigt mögliche Nachbesserungsforderung nach BT-Debatte Herbst 2026.<br><br>
+      <strong>NRW:</strong><br>
+      KG-Cluster: KWPDüsseldorf, KreisMettmann, RheinKreisNeuss — alle NRW.
+      CDU-geführtes Land (Wüst) deckt sich mit Bundes-CDU-Linie: Technologieoffenheit,
+      Bio-Treppe als Kompromiss. Aber: <strong>Düsseldorf warntVor GModG</strong> (18.5.2026,
+      städtische Verwaltung) trotz CDU-OB → kommunaler Planungsdruck überschreibt Parteilinie.
+      <em>Erwartete NRW-Position:</em> Bundesratsinitiative für stärkere Planungssicherheit
+      bei kommunalen Wärmeplänen — parteiübergreifend.<br><br>
+      <strong>Baden-Württemberg:</strong><br>
+      KG-Cluster: Stuttgart (SolaroffenseSTG, HHKlima100STG), LK Ludwigsburg (KlimaBonus eingefroren).
+      BW (CDU-Landesregierung ab 2026) → Technologieoffenheit; aber 100 Mio. €/Jahr Klimapaket
+      Stuttgart zeigt: Kommunen agieren unabhängig vom Bundesrahmen.
+      LK Ludwigsburg (eingefroren) deutet auf wachsenden Haushaltsdruck hin —
+      <em>Landesförderung als Ausgleich für wegfallende kommunale Programme</em> wird politisches Thema.<br>
+      <div class="ra-gap"><strong>KG-Wissenslücke (explizit):</strong>
+      Bundesrat-Knoten, Länder-Parteigliederungen (SPD-NRW, CDU-BW-Landesverband)
+      und Bundesratsabstimmungsverhalten sind noch nicht modelliert.
+      Das ist die nächste Ausbaustufe: Länderebene mit owl:sameAs → Wikidata-Parteigliederungen
+      und Bundesratsdaten. Impact-Schätzungen bleiben derzeit inferenziell.</div>`
+  },
+  {
+    text: 'Wissenschaft Politik CO2 Klimaeffekt Prognose GModG Öko-Institut',
+    fullText: 'Was sagt die Wissenschaft vs. die Politik zum CO₂-Effekt des GModG?',
+    answer: `<span class="ra-label">🤖 GraphRAG-Analyse · Epistemische Analyse CO₂-Effekt</span>
+      <strong>Wissenschaft</strong> (epistemisch: <em>prognostiziert</em>):<br>
+      <em>ÖkoInstitut → prognostiziert → CO₂Anstieg (+172 Mio. t bis 2040)</em><br>
+      Methodik: Modellierung vs. Referenzszenario. Zitiert von
+      <strong>TaherSaleh</strong> (zitiert, 12.3.2026) und <strong>Stümpfig</strong> (zitiert, 21.4.2026),
+      <strong>GermanZero</strong> warntVor — jeweils mit Verb <em>zitiert</em> / <em>warntVor</em>,
+      nicht <em>prognostiziert</em>: epistemische Distanz korrekt abgebildet.<br><br>
+      <strong>Politik</strong> (epistemisch: <em>erwartet / bezweckt</em>):<br>
+      <em>MüllerS → erwartet → ChancenGrüngas</em> (keine Quantifizierung)<br>
+      <em>GModG → bezweckt → Planungssicherheit</em> (politische Absicht, kein Emissionsmodell)<br><br>
+      <strong>Asymmetrie</strong>: 1× <em>prognostiziert</em> (mit Methode + Zahl)
+      vs. 2× <em>erwartet / bezweckt</em> (ohne Quantifizierung).
+      <span class="ra-cite">Keine empirische Gegenprognose von Regierungsseite im KG.</span>
+      <div class="ra-gap"><strong>KG-Mehrwert:</strong> Klassisches RAG würde alle Aussagen gleichbehandeln.
+      Der KG unterscheidet epistemische Verben — <em>prognostiziert</em> (Methode + Daten)
+      vs. <em>erwartet</em> (politische Meinung) — und macht die Beweislastverteilung
+      maschinenlesbar und visuell sichtbar.</div>`
+  }
+];
+
+// ── Extra seed injection (simulates what embedding retrieval would find) ──────
+function applyExtraSeeds(result, extraIds) {
+  if (!extraIds || !extraIds.length) return result;
+  const extra = new Set(extraIds.filter(id => nodes.find(n => n.id === id)));
+  extra.forEach(id => {
+    result.seedIds.add(id);
+    result.retrievedIds.add(id);
+    links.forEach(l => {
+      const s = l.source.id || l.source;
+      const t = l.target.id || l.target;
+      if (s === id) result.retrievedIds.add(t);
+      if (t === id) result.retrievedIds.add(s);
+    });
+  });
+  result.retrievedLinks = links.filter(l => {
+    const s = l.source.id || l.source; const t = l.target.id || l.target;
+    return result.retrievedIds.has(s) && result.retrievedIds.has(t);
+  });
+  result.embeddingSimulated = extra.size;
+  return result;
+}
+
+// ── Showcase card handlers ────────────────────────────────────────────────────
+document.querySelectorAll('.rag-q-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const qid = parseInt(card.dataset.qid);
+    const q = SHOWCASE_QUERIES[qid];
+    document.querySelectorAll('.rag-q-card').forEach(c => c.classList.remove('rag-active'));
+    card.classList.add('rag-active');
+    document.getElementById('rag-input').value = '';
+    let result = graphRagRetrieve(q.text, { topK: 12, hopDepth: 1 });
+    if (!result) return;
+    if (q.extraSeeds) result = applyExtraSeeds(result, q.extraSeeds);
+    applyRagHighlight(result);
+    renderRagResult(result, q.answer);
+  });
+});
+
+// ── Custom query handler ──────────────────────────────────────────────────────
+document.getElementById('rag-run').addEventListener('click', () => {
+  const qText = document.getElementById('rag-input').value.trim();
+  if (!qText) return;
+  document.querySelectorAll('.rag-q-card').forEach(c => c.classList.remove('rag-active'));
+  const result = graphRagRetrieve(qText, { topK: 10, hopDepth: 1 });
+  if (!result || result.retrievedIds.size === 0) {
+    document.getElementById('rag-answer').innerHTML =
+      '<div class="rag-answer-box"><span class="ra-label">Keine Treffer</span>Keine relevanten Knoten gefunden. Versuche andere Stichwörter.</div>';
+    document.getElementById('rag-result').classList.add('show');
+    return;
+  }
+  applyRagHighlight(result);
+  renderRagResult(result, null);
+});
+
+document.getElementById('rag-clear-btn').addEventListener('click', clearRagHighlight);
+
+// ragActive guard is built into resetHighlight() above
+</script>
+</body>
+</html>

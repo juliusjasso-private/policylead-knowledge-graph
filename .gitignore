@@ -1,0 +1,8 @@
+node_modules/
+.claude/
+*.py
+*.js
+!index.html
+*.docx
+package.json
+package-lock.json
