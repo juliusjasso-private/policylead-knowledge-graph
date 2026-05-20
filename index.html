@@ -600,7 +600,76 @@ window.KG_DATA = {
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- ── Passwort-Overlay ─────────────────────────────────────────────────────── -->
+<div id="pw-overlay" style="
+  display:flex; align-items:center; justify-content:center;
+  position:fixed; inset:0; z-index:9999;
+  background:#0e1c38;
+  font-family:'PT Sans',sans-serif;
+">
+  <div style="
+    background:#111e35; border:1px solid #1c3050; border-radius:12px;
+    padding:40px 48px; width:320px; text-align:center;
+    box-shadow:0 8px 40px rgba(0,0,0,0.6);
+  ">
+    <div style="font-size:13px; font-weight:700; letter-spacing:0.2em; color:#00a4b3; text-transform:uppercase; margin-bottom:4px;">POLICYLEAD</div>
+    <div style="font-size:11px; color:#7b8da3; margin-bottom:28px;">Knowledge Graph · GModG 2026</div>
+    <input id="pw-input" type="password" placeholder="Passwort" autocomplete="off" style="
+      width:100%; box-sizing:border-box;
+      background:#0e1c38; border:1px solid #1c3050; border-radius:6px;
+      color:#e0e6ef; font-size:14px; padding:10px 14px;
+      outline:none; margin-bottom:12px;
+      font-family:'PT Sans',sans-serif;
+    "/>
+    <div id="pw-error" style="color:#ef5350; font-size:12px; min-height:18px; margin-bottom:10px;"></div>
+    <button id="pw-btn" style="
+      width:100%; background:#00a4b3; border:none; border-radius:6px;
+      color:#fff; font-size:14px; font-weight:700; padding:11px;
+      cursor:pointer; letter-spacing:0.05em;
+      font-family:'PT Sans',sans-serif;
+    ">Zugang</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const PW = 'pl2030';
+  const overlay = document.getElementById('pw-overlay');
+  const input   = document.getElementById('pw-input');
+  const btn     = document.getElementById('pw-btn');
+  const err     = document.getElementById('pw-error');
+
+  // already unlocked this session?
+  if (sessionStorage.getItem('pl_auth') === '1') {
+    overlay.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = document.getElementById('app');
+      if (app) app.style.visibility = 'visible';
+    });
+    return;
+  }
+
+  function tryLogin() {
+    if (input.value === PW) {
+      sessionStorage.setItem('pl_auth', '1');
+      overlay.style.display = 'none';
+      const app = document.getElementById('app');
+      if (app) app.style.visibility = 'visible';
+    } else {
+      err.textContent = 'Falsches Passwort.';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.addEventListener('click', tryLogin);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  input.focus();
+})();
+</script>
+
+<div id="app" style="visibility:hidden">
 
   <!-- ── Sidebar ───────────────────────────────────────────────── -->
   <div id="sidebar">
