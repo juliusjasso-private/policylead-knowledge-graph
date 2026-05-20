@@ -643,6 +643,27 @@ window.KG_DATA = {
       outline:none; margin-bottom:12px;
       font-family:'PT Sans',sans-serif;
     "/>
+    <!-- CAPTCHA -->
+    <div style="
+      background:#0a1628; border:1px solid #1c3050; border-radius:8px;
+      padding:12px 14px; margin-bottom:12px; text-align:left;
+    ">
+      <div style="font-size:10px; color:#7b8da3; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">
+        ✓ Kein Roboter
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span id="captcha-q" style="font-size:15px; color:#e0e6ef; font-weight:700; white-space:nowrap;"></span>
+        <input id="captcha-input" type="text" inputmode="numeric" placeholder="?" autocomplete="off" style="
+          width:60px; background:#0e1c38; border:1px solid #1c3050; border-radius:6px;
+          color:#e0e6ef; font-size:14px; padding:7px 10px;
+          outline:none; font-family:'PT Sans',sans-serif; text-align:center;
+        "/>
+        <button id="captcha-refresh" title="Neue Aufgabe" style="
+          background:none; border:none; color:#7b8da3; font-size:16px;
+          cursor:pointer; padding:4px; line-height:1;
+        ">↻</button>
+      </div>
+    </div>
     <div id="pw-error" style="color:#ef5350; font-size:12px; min-height:18px; margin-bottom:10px;"></div>
     <button id="pw-btn" style="
       width:100%; background:#00a4b3; border:none; border-radius:6px;
@@ -656,10 +677,30 @@ window.KG_DATA = {
 <script>
 (function(){
   const PW = 'pl2030';
-  const overlay = document.getElementById('pw-overlay');
-  const input   = document.getElementById('pw-input');
-  const btn     = document.getElementById('pw-btn');
-  const err     = document.getElementById('pw-error');
+  const overlay  = document.getElementById('pw-overlay');
+  const input    = document.getElementById('pw-input');
+  const btn      = document.getElementById('pw-btn');
+  const err      = document.getElementById('pw-error');
+  const captchaQ = document.getElementById('captcha-q');
+  const captchaI = document.getElementById('captcha-input');
+  const captchaR = document.getElementById('captcha-refresh');
+
+  // ── CAPTCHA generator ──────────────────────────────────────────────────────
+  let captchaAnswer = 0;
+  function newCaptcha() {
+    const ops = ['+', '−', '×'];
+    const op  = ops[Math.floor(Math.random() * ops.length)];
+    let a, b, ans;
+    if (op === '+') { a = r(2,12); b = r(2,12); ans = a + b; }
+    else if (op === '−') { a = r(5,15); b = r(1, a); ans = a - b; }
+    else { a = r(2,9);  b = r(2,9);  ans = a * b; }
+    captchaAnswer = ans;
+    captchaQ.textContent = `${a} ${op} ${b} =`;
+    captchaI.value = '';
+  }
+  function r(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  captchaR.addEventListener('click', () => { newCaptcha(); captchaI.focus(); });
+  newCaptcha();
 
   // already unlocked this session?
   if (sessionStorage.getItem('pl_auth') === '1') {
@@ -672,20 +713,30 @@ window.KG_DATA = {
   }
 
   function tryLogin() {
-    if (input.value === PW) {
-      sessionStorage.setItem('pl_auth', '1');
-      overlay.style.display = 'none';
-      const app = document.getElementById('app');
-      if (app) app.style.visibility = 'visible';
-    } else {
+    const captchaOk = parseInt(captchaI.value, 10) === captchaAnswer;
+    const pwOk      = input.value === PW;
+    if (!captchaOk) {
+      err.textContent = 'CAPTCHA falsch — bitte neu berechnen.';
+      newCaptcha();
+      captchaI.focus();
+      return;
+    }
+    if (!pwOk) {
       err.textContent = 'Falsches Passwort.';
       input.value = '';
+      newCaptcha();
       input.focus();
+      return;
     }
+    sessionStorage.setItem('pl_auth', '1');
+    overlay.style.display = 'none';
+    const app = document.getElementById('app');
+    if (app) app.style.visibility = 'visible';
   }
 
   btn.addEventListener('click', tryLogin);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  input.addEventListener('keydown',    e => { if (e.key === 'Enter') tryLogin(); });
+  captchaI.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
   input.focus();
 })();
 </script>
